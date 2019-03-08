@@ -1,0 +1,20 @@
+{
+    "compilerOptions": {
+        "module": "none",
+        "target": "es5",
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "./dist/itable.js",
+        // "strictNullChecks": true,
+    },
+    "files": [
+        "src/iComponent.ts",
+        "src/iTable.interface.ts",
+        
+        "src/iTable.ts",
+        "src/iFreezeHeadTable.ts",
+        "src/iFreezeColumnTable.ts",
+        "src/jQueryInit.ts"
+    ],
+}

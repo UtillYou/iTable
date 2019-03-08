@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+  <link rel="stylesheet" href="./vendor/bootstrap.css" />
+  <link rel="stylesheet/less" type="text/css" href="./css/itable.less" />
+  <script src="./vendor/less.min.js"></script>
+</head>
+
+<body>
+  <div style="margin:20px;">
+    <div id="myTable" style="border:1px solid gray;width:60%;height:400px;float: left;">
+
+    </div>
+    <div style="float:left;border:1px solid gray;width:1000px;height:400px;width:39%;padding:10px;margin-left: 1%">
+
+    </div>
+    <div style="clear:both"></div>
+  </div>
+
+  </div>
+  <div style="clear: both;"></div>
+  <script src="./vendor/jquery-1.11.3.min.js"></script>
+  <script src="./dist/itable.js"></script>
+  <script type="text/javascript">
+    var arr = [];
+    for (var i = 0; i < 20; i++) {
+      var row = {};
+      row.id = i.toString() + i.toString() + i.toString();
+      for (var j = 0; j < 10; j++) {
+        row['name' + j.toString()] = Math.random().toString().substr(0, 5);
+      }
+
+      arr.push(row);
+    }
+    var columns = [];
+    for (var i = 0; i < 10; i++) {
+      columns.push({
+        title: '标题' + i.toString(),
+        name: 'name' + i.toString(),
+        width: 150,
+        resizable: true
+      });
+    }
+    columns[0].title = '序号';
+    columns[0].width = 47;
+    columns[0].isSequence = true;
+    columns[0].isFrozen = true;
+
+    columns[1].isFrozen = true;
+    columns[1].sorter = true;
+    columns[1].sortDirections = ['descend'];
+    // columns[1].defaultSortOrder='descend';
+
+    columns[2].isFrozen = true;
+    // columns[3].isFrozen=true;
+    columns[3].sorter = true;
+    columns[3].sortDirections = ['ascend', 'descend'];
+    columns[4].sorter = true;
+    columns[4].sortDirections = ['descend'];
+    // columns[4].defaultSortOrder='descend';
+    // columns[2].isFrozen=true;
+    console.log(arr);
+
+    var itable = $('#myTable').itable({
+      data: arr,
+      columns: columns,
+      freezeHead: true,
+      freezeColumn: true,
+      getUniqueId: function (rowData) {
+        return rowData.id;
+      }
+
+    });
+    itable.render();
+  </script>
+</body>
+
+</html>
