@@ -9,15 +9,47 @@
   <link rel="stylesheet" href="./vendor/bootstrap.css" />
   <link rel="stylesheet/less" type="text/css" href="./css/itable.less" />
   <script src="./vendor/less.min.js"></script>
+  <style>
+    label {
+      margin-right: 10px;
+    }
+  </style>
 </head>
 
 <body>
   <div style="margin:20px;">
-    <div id="myTable" style="border:1px solid gray;width:60%;height:400px;float: left;">
+    <div id="myTable" style="border:1px solid gray;width:60%;height:400px;float: left;overflow:auto;">
 
     </div>
     <div style="float:left;border:1px solid gray;width:1000px;height:400px;width:39%;padding:10px;margin-left: 1%">
-
+      <div>
+        <label for="freezeHead">固定表头：</label><input type="checkbox" name="freezeHead" id="freezeHead" value="1" checked>
+      </div>
+      <div>
+        <label for="isSequence">生成序号列：</label><input type="checkbox" name="isSequence" id="isSequence" value="1"
+          checked>
+      </div>
+      <div>
+        <label for="columnNumbers">列数：</label><input type="number" name="columnNumbers" id="columnNumbers" value="10"
+          onchange="handleColumnNumbersChange()">
+      </div>
+      <div>
+        <label for="">冻结列：</label>
+        <span id="freezeColumns"></span>
+      </div>
+      <div>
+        <label for="">伸缩列：</label>
+        <span id="resizeColumns"></span>
+      </div>
+      <div>
+        <label for="">排序列：</label>
+        <span id="sortColumns"></span>
+      </div>
+      <div>
+        <button onclick="generateTable()">生成表格</button>
+        <button>动态改变数据</button>
+        <button>动态改变设置</button>
+      </div>
     </div>
     <div style="clear:both"></div>
   </div>
@@ -27,56 +59,114 @@
   <script src="./vendor/jquery-1.11.3.min.js"></script>
   <script src="./dist/itable.js"></script>
   <script type="text/javascript">
-    var arr = [];
-    for (var i = 0; i < 20; i++) {
-      var row = {};
-      row.id = i.toString() + i.toString() + i.toString();
-      for (var j = 0; j < 10; j++) {
-        row['name' + j.toString()] = Math.random().toString().substr(0, 5);
+    var itable;
+    function handleColumnNumbersChange() {
+      var columnNumbers = $('#columnNumbers').val();
+      $('#freezeColumns').empty();
+      $('#resizeColumns').empty();
+      $('#sortColumns').empty();
+      var tmpl = '<label for="freezeColumns$i"><input type="checkbox" name="freezeColumns" id="freezeColumns$i" value="$i">$i</label>';
+      var tmpl2 = '<label for="resizeColumns$i"><input type="checkbox" name="resizeColumns" id="resizeColumns$i" value="$i">$i</label>';
+      var tmpl3 = '<label for="sortColumns$i"><input type="checkbox" name="sortColumns" id="sortColumns$i" value="$i">$i</label>';
+      for (var i = 0; i < columnNumbers; i++) {
+        $('#freezeColumns').append($(tmpl.replace(/\$i/g, i)));
+        $('#resizeColumns').append($(tmpl2.replace(/\$i/g, i)));
+        $('#sortColumns').append($(tmpl3.replace(/\$i/g, i)));
       }
-
-      arr.push(row);
     }
-    var columns = [];
-    for (var i = 0; i < 10; i++) {
-      columns.push({
-        title: '标题' + i.toString(),
-        name: 'name' + i.toString(),
-        width: 150,
-        resizable: true
+    handleColumnNumbersChange();
+
+    function generateData(colLen, rowLen) {
+      var chars = '先帝创业未半而中道崩殂，今天下三分，益州疲弊，此诚危急存亡之秋也。然侍卫之臣不懈于内，忠志之士忘身于外者，盖追先帝之殊遇，欲报之于陛下也。诚宜开张圣听，以光先帝遗德，恢弘志士之气，不宜妄自菲薄，引喻失义，以塞忠谏之路也';
+      var numbers = '0123456789';
+      var egs = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+      var rows = [];
+      var numberArr = numbers.split('');
+      var charArr = chars.split('');
+      var egArr = egs.split('');
+      for (var i = 0; i < rowLen; i++) {
+        var row = {};
+        row.id = i.toString() + i.toString() + i.toString();
+        for (let j = 0; j < colLen; j++) {
+          var text = '';
+          var textLen = Math.floor(Math.random() * 30);
+          for (let k = 0; k < textLen; k++) {
+            if (k % 3 === 0) {
+              text += numberArr[Math.floor(Math.random() * numbers.length)];
+            }
+            if (k % 3 === 1) {
+              text += charArr[Math.floor(Math.random() * charArr.length)];
+            }
+            if (k % 3 === 2) {
+              text += egArr[Math.floor(Math.random() * egArr.length)];
+            }
+          }
+          row['name' + j.toString()] = text;
+        }
+        rows.push(row);
+      }
+      return rows;
+    }
+
+    function generateTable() {
+      var freezeHead = $('#freezeHead').val() == 1 ? true : false;
+      var isSequence = $('#isSequence').val() == 1 ? true : false;
+      var columnNumbers = parseInt($('#columnNumbers').val());
+      var freezeColumns = $('[name="freezeColumns"]').map(function () {
+        return $(this).prop('checked');
+      }).get();
+      var resizeColumns = $('[name="resizeColumns"]').map(function () {
+        return $(this).prop('checked');
+      }).get();
+      var sortColumns = $('[name="sortColumns"]').map(function () {
+        return $(this).prop('checked');
+      }).get();
+
+      var columns = [];
+      var hasDefaultSort = false;
+      for (var i = 0; i < columnNumbers; i++) {
+        var col = {
+          title: '标题' + i.toString(),
+          name: 'name' + i.toString(),
+          width: 150,
+          isFrozen: freezeColumns[i],
+          resizable: resizeColumns[i]
+        };
+        
+        if (sortColumns[i]) {
+          col.sorter = true;
+          col.sortDirections = Math.floor(Math.random() * 10) % 2 === 0 ? ['descend'] : ['ascend', 'descend'];
+          if (Math.floor(Math.random() * 10) % 3 === 0 && hasDefaultSort === false) {
+            col.defaultSortOrder = col.sortDirections[0];
+          }
+        }
+        if (i === 0 && isSequence) {
+          col = {
+            title: '序号',
+            name: 'name' + i.toString(),
+            width: 47,
+            isSequence: true,
+            isFrozen: true,
+          };
+        }
+        columns.push(col);
+      }
+      var data = generateData(columnNumbers, Math.floor(Math.random() * 30) + 10);
+      itable = $('#myTable').itable({
+        data: data,
+        columns: columns,
+        freezeHead: freezeHead,
+        freezeColumn: freezeColumns.filter(function (x) {
+          return x;
+        }).length > 0,
+        getUniqueId: function (rowData) {
+          return rowData.id;
+        },
+        width:1500
+
       });
+      itable.render();
     }
-    columns[0].title = '序号';
-    columns[0].width = 47;
-    columns[0].isSequence = true;
-    columns[0].isFrozen = true;
-
-    columns[1].isFrozen = true;
-    columns[1].sorter = true;
-    columns[1].sortDirections = ['descend'];
-    // columns[1].defaultSortOrder='descend';
-
-    columns[2].isFrozen = true;
-    // columns[3].isFrozen=true;
-    columns[3].sorter = true;
-    columns[3].sortDirections = ['ascend', 'descend'];
-    columns[4].sorter = true;
-    columns[4].sortDirections = ['descend'];
-    // columns[4].defaultSortOrder='descend';
-    // columns[2].isFrozen=true;
-    console.log(arr);
-
-    var itable = $('#myTable').itable({
-      data: arr,
-      columns: columns,
-      freezeHead: true,
-      freezeColumn: true,
-      getUniqueId: function (rowData) {
-        return rowData.id;
-      }
-
-    });
-    itable.render();
   </script>
 </body>
 

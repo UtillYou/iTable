@@ -247,9 +247,52 @@ interface IComponentInterface {
   state: State;
 
   /**
+   * 设置选项
+   */
+  setOption:(optionsParam: Options, $this?: JQuery)=>void;
+
+  /**
+   * 获取选项
+   */
+  getOption:()=>Options;
+
+  /**
+   * 获取状态;
+   */
+  getState:()=>State;
+
+  /**
    * 初始化HTML，将原始的元素内容删除，构建插件HTML
    */
   initHtml: ($this: JQuery<HTMLElement>) => void;
+
+  /**
+   * 更新option data
+   * 同时更新state data
+   */
+  updateOptionData: (data: Array<Row>) => void;
+
+  /**
+   * 向option data 末尾添加一条数据
+   * 同时更新state data
+   */
+  appendOptionData: (row: Row) => void;
+
+  /**
+   * 向option data 头部添加一条数据
+   * 同时更新state data
+   */
+  prependOptionData: (row: Row) => void;
+
+  /**
+   * 设置活跃行
+   */
+  setActiveRow:(id:string)=>void;
+
+  /**
+   * 设置锁定行
+   */
+  setLockedRow:(id:string)=>void;
 
   /**
    * 构建state data

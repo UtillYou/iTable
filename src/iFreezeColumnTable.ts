@@ -198,16 +198,6 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
     const rightData = [];
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
-      // const leftRow :Row= {};
-      // const rightRow :Row= {};
-      // for (let j = 0; j < leftColumns.length; j++) {
-      //   const name = leftColumns[j].name;
-      //   leftRow[name] = row[name];
-      // }
-      // for (let k = 0; k < rightColumns.length; k++) {
-      //   const name = rightColumns[k].name;
-      //   rightRow[name]=row[name];
-      // }
       leftData.push(row);
       rightData.push(row);
     }
@@ -231,7 +221,59 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 更新state中的data
    * @param data 用于更新 state data 的 data
    */
-  updateStateData(data: Array<Row>) {
+  updateOptionData(data: Array<Row>):void {
+    this.options.data = data;
+    const [leftColumns, rightColumns] = this.splitColumns(this.options);
+    const [leftData, rightData] = this.splitData(this.options.data, leftColumns, rightColumns);
+    this.leftTable.updateOptionData(leftData);
+    this.rightTable.updateOptionData(rightData);
+  }
+
+  /**
+   * 向option的末尾添加数据，同时更新state data
+   * @param row 要添加的行数据
+   */
+  appendOptionData(row: Row):void{
+    this.options.data.push(row);
+    this.state.data.push(row);
+    this.leftTable.appendOptionData(row);
+    this.rightTable.appendOptionData(row);
+  }
+
+  /**
+   * 向option的头部添加数据，同时更新state data
+   * @param row 要添加的行数据
+   */
+  prependOptionData(row: Row):void{
+    this.options.data.splice(0, 0, row);
+    this.state.data.splice(0, 0, row);
+    this.leftTable.prependOptionData(row);
+    this.rightTable.prependOptionData(row);
+  }
+
+  /**
+   * 设置活跃行，就是选中行
+   * @param id 行唯一标识 id
+   */
+  setActiveRow(id:string):void{
+    this.leftTable.setActiveRow(id);
+    this.rightTable.setActiveRow(id);
+  }
+
+  /**
+   * 设置锁定行，置顶行
+   * @param id 行唯一标识 id
+   */
+  setLockedRow(id:string):void{
+    this.leftTable.setLockedRow(id);
+    this.rightTable.setLockedRow(id);
+  }
+
+  /**
+   * 更新state中的data
+   * @param data 用于更新 state data 的 data
+   */
+  updateStateData(data: Array<Row>) :void{
     this.state.data = this.buildStateData(data, this.state.currentSortColumnIndex, this.state.currentSortDirection);
     const [leftColumns, rightColumns] = this.splitColumns(this.options);
     const [leftData, rightData] = this.splitData(this.state.data, leftColumns, rightColumns);

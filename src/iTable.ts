@@ -404,7 +404,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     }
 
     // 取消双击固定行
-    if (this.state.lastLockedRowId!==undefined&&this.state.lastLockedRowId === rowId ) {
+    if (this.state.lastLockedRowId !== undefined && this.state.lastLockedRowId === rowId) {
       this.handleTdDblClickDomOpe(undefined, undefined);
       if (typeof this.options.handleTdDblClick === 'function') {
         this.options.handleTdDblClick(undefined, undefined);
@@ -439,7 +439,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param _cellIndex 单元格索引，列索引
    */
   handleTdDblClickDomOpe(rowId: string, _cellIndex: number) {
-    if (this.state.lastLockedRowId === rowId|| rowId === undefined) {
+    if (this.state.lastLockedRowId === rowId || rowId === undefined) {
       this.state.lastLockedRowId = undefined;
     } else {
       this.state.lastLockedRowId = rowId;
@@ -526,6 +526,52 @@ class ITable extends IBaseComponent implements IComponentInterface {
     }
 
     this.render();
+  }
+
+
+  /**
+   * 更新state中的data
+   * @param data 用于更新 state data 的 data
+   */
+  updateOptionData(data: Array<Row>) :void{
+    this.options.data = data;
+    this.updateStateData(data);
+  }
+
+  /**
+   * 向option的末尾添加数据，同时更新state data
+   * @param row 要添加的行数据
+   */
+  appendOptionData(row: Row) :void{
+    this.options.data.push(row);
+    this.state.data.push(row);
+    this.render();
+  }
+
+  /**
+   * 向option的头部添加数据，同时更新state data
+   * @param row 要添加的行数据
+   */
+  prependOptionData(row: Row):void {
+    this.options.data.splice(0, 0, row);
+    this.state.data.splice(0, 0, row);
+    this.render();
+  }
+
+  /**
+   * 设置活跃行，就是选中行
+   * @param id 行唯一标识 id
+   */
+  setActiveRow(id:string):void{
+    this.handleTdClickDomOpe(id,0);
+  }
+
+  /**
+   * 设置锁定行，置顶行
+   * @param id 行唯一标识 id
+   */
+  setLockedRow(id:string):void{
+    this.handleTdDblClickDomOpe(id,0);
   }
 
   /**
