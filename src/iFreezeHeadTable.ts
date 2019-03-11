@@ -79,6 +79,14 @@ class IFreezeHeadTable extends ITable {
   getResizeDom(): Array<JQuery<Node[]>> {
     const index = this.state.$dom.$resizingDom.index();
     const $col = this.state.$dom.$table.find(`colgroup>col:eq(${index})`);
-    return [this.state.$dom.$resizingDom, $col];
+
+    const r =[this.state.$dom.$resizingDom, $col];
+
+    if (this.detectIE()) {
+      const index = this.state.$dom.$resizingDom.index();
+      const $th = this.state.$dom.$thead.find(`th:eq(${index.toString()})`);
+      r.push($th);
+    }
+    return r;
   }
 }

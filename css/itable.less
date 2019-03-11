@@ -8,6 +8,7 @@
     overflow-x: auto;
     .i-table-container,.i-table-head-container,.i-table-content-container{
         position: relative;
+        width:100%;
         .i-table-outer{
             height: 100%;
             .i-table-inner{
@@ -77,6 +78,17 @@
                                     background-color: #fff8b0;
                                 }
                             }
+                            td{
+                                .cell-div{
+                                    height:20px;
+                                    width:100%;
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    display: -webkit-box;
+                                    -webkit-line-clamp: 1;
+                                    -webkit-box-orient: vertical;
+                                }
+                            }
                         }
                     }
                 }
@@ -121,7 +133,7 @@
             -webkit-box-shadow: 6px 0 6px -4px rgba(0,0,0,0.15);
             box-shadow: 6px 0 6px -4px rgba(0,0,0,0.15);
         }
-        .i-table-head-container{
+        .i-table-head-container,.i-table-container{
             .i-table-outer{
                 .i-table-inner{
                     .table-bordered{
@@ -135,7 +147,7 @@
                 }
             }
         }
-        .i-table-content-container{
+        .i-table-content-container,.i-table-container{
             .i-table-outer{
                 overflow-x: hidden;
                 .i-table-inner{

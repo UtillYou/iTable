@@ -58,7 +58,8 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * @param $this 原容器
    */
   setOption(optionsParam: Options, $this?: JQuery) {
-    this.destory();
+    const $thisRef = $this === undefined ? this.state.$dom.$origin : $this;
+    this.destory(false);
     const defaults = {
       name: 'freezeColumnTable',
     };
@@ -117,7 +118,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
       data: stateData,
     };
 
-    this.initHtml($this);
+    this.initHtml($thisRef);
   }
 
   /**
@@ -144,6 +145,20 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
     const $row = this.buildDom(IFreezeColumnTable.rowTmpl);
     const $left = this.buildDom(IFreezeColumnTable.leftTmpl);
     const $right = this.buildDom(IFreezeColumnTable.rightTmpl);
+
+    this.state.height = height;
+    this.state.width = width;
+    
+    this.state.$dom = {
+      $origin: $this,
+      $root: $row,
+      $container: null,
+      $inner: null,
+      $table: null,
+      $colgroup: null,
+      $thead: null,
+      $tbody: null,
+    }
 
     this.$left = $left;
     $this.empty();
@@ -221,7 +236,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 更新state中的data
    * @param data 用于更新 state data 的 data
    */
-  updateOptionData(data: Array<Row>):void {
+  updateOptionData(data: Array<Row>): void {
     this.options.data = data;
     const [leftColumns, rightColumns] = this.splitColumns(this.options);
     const [leftData, rightData] = this.splitData(this.options.data, leftColumns, rightColumns);
@@ -233,7 +248,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 向option的末尾添加数据，同时更新state data
    * @param row 要添加的行数据
    */
-  appendOptionData(row: Row):void{
+  appendOptionData(row: Row): void {
     this.options.data.push(row);
     this.state.data.push(row);
     this.leftTable.appendOptionData(row);
@@ -244,7 +259,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 向option的头部添加数据，同时更新state data
    * @param row 要添加的行数据
    */
-  prependOptionData(row: Row):void{
+  prependOptionData(row: Row): void {
     this.options.data.splice(0, 0, row);
     this.state.data.splice(0, 0, row);
     this.leftTable.prependOptionData(row);
@@ -255,7 +270,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 设置活跃行，就是选中行
    * @param id 行唯一标识 id
    */
-  setActiveRow(id:string):void{
+  setActiveRow(id: string): void {
     this.leftTable.setActiveRow(id);
     this.rightTable.setActiveRow(id);
   }
@@ -264,7 +279,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 设置锁定行，置顶行
    * @param id 行唯一标识 id
    */
-  setLockedRow(id:string):void{
+  setLockedRow(id: string): void {
     this.leftTable.setLockedRow(id);
     this.rightTable.setLockedRow(id);
   }
@@ -273,7 +288,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 更新state中的data
    * @param data 用于更新 state data 的 data
    */
-  updateStateData(data: Array<Row>) :void{
+  updateStateData(data: Array<Row>): void {
     this.state.data = this.buildStateData(data, this.state.currentSortColumnIndex, this.state.currentSortDirection);
     const [leftColumns, rightColumns] = this.splitColumns(this.options);
     const [leftData, rightData] = this.splitData(this.state.data, leftColumns, rightColumns);
@@ -311,16 +326,18 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
     let finalData = this.shadowCopyArray(data);
 
     // 根据当前活跃表格名称确定应该应用那个索引和表格列定义
-    const index = this.activeTableName === 'left' ? sortColumnIndex : leftColumns.length + sortColumnIndex;
-    const column = this.activeTableName === 'left' ? leftColumns : rightColumns;
+    let index = undefined;
+    if (sortColumnIndex !== undefined) {
+      index = this.activeTableName === 'left' ? sortColumnIndex : leftColumns.length + sortColumnIndex;
+    }
 
     // 排序
-    finalData = this.sortData(finalData,this.options.columns,index,sortDirection);
+    finalData = this.sortData(finalData, this.options.columns, index, sortDirection);
 
     // 拆分data
     const [leftData, rightData] = this.splitData(finalData, leftColumns, rightColumns);
 
-    this.state.currentSortColumnIndex = sortColumnIndex === undefined ? undefined : index;
+    this.state.currentSortColumnIndex = index;
     this.state.currentSortDirection = sortDirection;
 
     if (this.activeTableName === 'left') {
@@ -441,14 +458,15 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
 
   /**
    * 销毁dom内容，引用
+   * @param withChild 是销毁子组件的内容
    */
-  destory() {
+  destory(withChild: boolean) {
     if (this.state) {
       this.state.$dom.$origin.empty();
       this.state.$dom = undefined;
       this.state = undefined;
     }
-    if (this.leftTable) {
+    if (withChild === true && this.leftTable) {
       this.leftTable.destory();
       this.rightTable.destory();
       this.$left = undefined;

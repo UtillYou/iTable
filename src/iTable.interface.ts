@@ -314,5 +314,5 @@ interface IComponentInterface {
   /**
    * 销毁dom内容，引用
    */
-  destory: () => void;
+  destory: (withChild:boolean) => void;
 }

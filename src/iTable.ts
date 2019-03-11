@@ -23,6 +23,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
   static tbodyTmpl: string = '<tbody></tbody>';
   static tdTmpl: string = '<td></td>';
   static resizeHandleTmpl: string = `<span class="${ITable.resizeHandleClass}"></span>`;
+  static cellDivTmpl: string = '<div class="cell-div"></div>';
   static upTmpl: string = `<i class="${ITable.sortHandleClass} up">
   <svg viewBox="0 0 1024 1024"  width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M858.9 689L530.5 308.2c-9.4-10.9-27.5-10.9-37 0L165.1 689c-12.2 14.2-1.2 35 18.5 35h656.8c19.7 0 30.7-20.8 18.5-35z"></path></svg>
   </i>`;
@@ -44,6 +45,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param $this 原容器
    */
   setOption(optionsParam: Options, $this?: JQuery) {
+    const $thisRef = $this === undefined ? this.state.$dom.$origin : $this;
     this.destory();
     const defaults = {
       name: 'table',
@@ -63,7 +65,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     };
 
 
-    this.initHtml($this);
+    this.initHtml($thisRef);
     // 绑定事件
     this.bindEvent();
   }
@@ -113,7 +115,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     }
 
     if (typeof options.width === 'number') {
-      $container.css('width', `${options.width}px`)
+      $root.css('width', `${options.width}px`)
     }
 
     $this.empty();
@@ -142,6 +144,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    */
   bindEvent() {
     this.state.$dom.$thead.on('mousedown', "." + ITable.resizeHandleClass, this.handleResizeMousedown.bind(this));
+    this.state.$dom.$thead.on('dblclick', "." + ITable.resizeHandleClass, this.handleResizeDblClick.bind(this));
     this.state.$dom.$thead.on('click', "." + ITable.sortHandleClass, this.handleSortClick.bind(this));
     this.state.$dom.$tbody.on('mouseenter', 'tr', this.handleTdHover.bind(this));
     this.state.$dom.$tbody.on('click', 'td', this.handleTdClick.bind(this));
@@ -215,7 +218,71 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 获取需要伸缩的列的 jQuery dom 列表
    */
   getResizeDom(): Array<JQuery<Node[]>> {
-    return [this.state.$dom.$resizingDom];
+    const r = [this.state.$dom.$resizingDom];
+    if (this.detectIE()) {
+      const index = this.state.$dom.$resizingDom.index();
+      const $th = this.state.$dom.$thead.find(`th:eq(${index.toString()})`);
+      r.push($th);
+    }
+
+    return r;
+  }
+
+  handleResizeDblClick(event: JQuery.DoubleClickEvent) {
+    // 查找对应的col
+    const $parent = $(event.target).parent();
+    const index = $parent.index();
+    const $col = $parent.closest('table').find(`colgroup>col:eq(${index})`);
+    this.state.$dom.$resizingDom = $col;
+
+    const columnName = this.options.columns[index].name;
+    let charLength = 0;
+    for (let i = 0; i < this.state.data.length; i++) {
+      const element = this.state.data[i];
+      let elementLength = 0;
+      const elementStr = element[columnName].toString();
+      const elementCount = elementStr.length;
+      for (let j = 0; j < elementCount; j++) {
+        const c = elementStr[j];
+        if (this.isAlphabet(c) || this.isNumber(c)) {
+          elementLength += 0.6;
+        }else {
+          elementLength += 1;
+        }
+      }
+      elementLength = Math.ceil(elementLength);
+      
+      if (elementLength > charLength) {
+        charLength = elementLength;
+      }
+    }
+
+    if (charLength > 0) {
+      const $firstTd = this.state.$dom.$tbody.find('td:eq(0)');
+      const defaultFontSize = 14;
+      let actualFontSize = parseInt($firstTd.css('font-size'));
+      actualFontSize = actualFontSize === null || isNaN(actualFontSize) ? defaultFontSize : actualFontSize;
+
+      let padding = parseInt($firstTd.css('padding'));
+      padding = padding === null || isNaN(padding) ? 4 : padding;
+
+      const width = (charLength * actualFontSize) + (padding * 2);
+      const currentWidth = this.state.$dom.$resizingDom.outerWidth();
+      const delta = width - currentWidth;
+
+      let rootWidth = this.state.$dom.$root.outerWidth();
+      rootWidth = Math.floor(rootWidth + delta);
+
+      this.getResizeDom().forEach(($dom) => {
+        $dom.css({
+          'width': width.toString() + 'px',
+          'minWidth': width.toString() + 'px',
+        });
+      });
+      this.state.$dom.$root.css({
+        'width': rootWidth.toString() + 'px',
+      });
+    }
   }
 
   /**
@@ -280,12 +347,19 @@ class ITable extends IBaseComponent implements IComponentInterface {
       const delta = event.pageX - this.state.resizePrevPageX;
       let width = this.state.$dom.$resizingDom.outerWidth();
       width = Math.floor(width + delta);
+
+      let rootWidth = this.state.$dom.$root.outerWidth();
+      rootWidth = Math.floor(rootWidth + delta);
+
       this.state.resizePrevPageX = event.pageX;
       this.getResizeDom().forEach(($dom) => {
         $dom.css({
           'width': width.toString() + 'px',
           'minWidth': width.toString() + 'px',
         });
+      });
+      this.state.$dom.$root.css({
+        'width': rootWidth.toString() + 'px',
       });
     }
   }
@@ -487,7 +561,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
       for (let j = 0; j < columns.length; j++) {
         const value = row[columns[j].name];
         const $td = this.buildDom(ITable.tdTmpl);
-        $td.html(columns[j].render(value, i, j, row));
+        const $cellDiv = this.buildDom(ITable.cellDivTmpl);
+        $cellDiv.html(columns[j].render(value, i, j, row));
+        $td.append($cellDiv.get(0));
         $tr.append($td.get(0));
       }
     }
@@ -533,7 +609,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 更新state中的data
    * @param data 用于更新 state data 的 data
    */
-  updateOptionData(data: Array<Row>) :void{
+  updateOptionData(data: Array<Row>): void {
     this.options.data = data;
     this.updateStateData(data);
   }
@@ -542,7 +618,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 向option的末尾添加数据，同时更新state data
    * @param row 要添加的行数据
    */
-  appendOptionData(row: Row) :void{
+  appendOptionData(row: Row): void {
     this.options.data.push(row);
     this.state.data.push(row);
     this.render();
@@ -552,7 +628,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 向option的头部添加数据，同时更新state data
    * @param row 要添加的行数据
    */
-  prependOptionData(row: Row):void {
+  prependOptionData(row: Row): void {
     this.options.data.splice(0, 0, row);
     this.state.data.splice(0, 0, row);
     this.render();
@@ -562,16 +638,16 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 设置活跃行，就是选中行
    * @param id 行唯一标识 id
    */
-  setActiveRow(id:string):void{
-    this.handleTdClickDomOpe(id,0);
+  setActiveRow(id: string): void {
+    this.handleTdClickDomOpe(id, 0);
   }
 
   /**
    * 设置锁定行，置顶行
    * @param id 行唯一标识 id
    */
-  setLockedRow(id:string):void{
-    this.handleTdDblClickDomOpe(id,0);
+  setLockedRow(id: string): void {
+    this.handleTdDblClickDomOpe(id, 0);
   }
 
   /**

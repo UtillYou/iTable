@@ -183,4 +183,29 @@ class IBaseComponent {
     }
     return rowId
   }
+
+  /**
+   * 判断当前浏览器是否IE浏览器
+   */
+  detectIE():boolean{
+    var ua = window.navigator.userAgent;
+    var msie = ua.indexOf("MSIE ");
+    return msie > -1;
+  }
+
+  /**
+   * 判断文本是否为数字
+   * @param num 需要判断的文本
+   */
+  isNumber(num:string):boolean{
+    return '0123456789'.indexOf(num) > -1;
+  }
+
+  /**
+   * 判断文本是否为字母
+   * @param char 需要判断的文本
+   */
+  isAlphabet(char:string):boolean{
+    return 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'.indexOf(char) > -1;
+  }
 }
