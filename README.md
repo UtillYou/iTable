@@ -84,3 +84,21 @@ width|number\|string|no|宽度，数值代表像素，字符串代表百分比
 maxWidth|number|no|最大宽度
 minWidth|number|no|最小宽度
 render|function|no|渲染函数,默认调用 toString() 显示
+
+##### 方法
+名称|定义|含义
+---|---|---
+setOption|(optionsParam: Options, $this?: JQuery)=>void|设置配置项
+getOption|()=>Options|获取配置项
+getState|()=>State|获取内部状态
+updateOptionData|(row:Row)=>void|更新一行option data,同时更新option data,根据 id 查找需要更新的数据, 同时更新dom渲染，是更新，不是 重绘，也就是不会调用 render 方法
+replaceOptionData|(data: Array<Row>) => void|替换option data,同时替换state data
+appendOptionData|(row: Row) => void|向option data 末尾添加一条数据,触发重新渲染,同时更新state data
+appendOptionData|(row: Row) => void|向option data 末尾添加一条数据,触发重新渲染,同时更新state data
+prependOptionData|(row: Row) => void|向option data 头部添加一条数据,触发重新渲染,同时更新state data
+deleteOptionData|(id:string)=>void|删除一行，触发重新渲染,并同时删除options和state中的数据
+setActiveRow|(id:string)=>void|设置活跃行,活跃行背景蓝色
+setLockedRow|(id:string)=>void|设置锁定行，锁定行背景黄色，并置顶
+updateStateData|(data: Array<Row>) => void|更新state data,目前可能由排序触发，未来也许会添加筛选功能，也能触发
+render|() => void|渲染表格数据
+destory|(withChild:boolean) => void|销毁dom内容，引用
