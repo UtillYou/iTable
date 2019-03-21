@@ -55,7 +55,8 @@
       <br>
       <div>
         第 <input type="number" name="" id="choseRow" style="width:40px" value="0"> 行 <button onclick="choseRow()">选中</button><br/><br>
-        第 <input type="number" name="" id="lockRow" style="width:40px"  value="0"> 行 <button onclick="lockRow()">锁定（置顶）</button>
+        第 <input type="number" name="" id="lockRow" style="width:40px"  value="0"> 行 <button onclick="lockRow()">锁定（置顶）</button><br><br>
+        第 <input type="number" name="" id="deleteRow" style="width:40px"  value="0"> 行 <button onclick="deleteRow()">删除</button>
       </div>
     </div>
     <div style="clear:both"></div>
@@ -68,6 +69,11 @@
   <script type="text/javascript">
     var itable;
     var columnNumbers;
+
+    function deleteRow() {
+      var deleteRowNumber = parseInt($('#deleteRow').val());
+      itable.deleteOptionData(itable.options.data[deleteRowNumber].id);
+    }
 
     function choseRow() {
       var choseRowNumber = parseInt($('#choseRow').val());
@@ -89,7 +95,7 @@
     }
     function handleChangeData() {
       var data = generateData(columnNumbers, Math.floor(Math.random() * 30) + 10);
-      itable.updateOptionData(data);
+      itable.replaceOptionData(data);
     }
     function handleColumnNumbersChange() {
       var columnNumbers = $('#columnNumbers').val();
@@ -160,8 +166,12 @@
           title: '标题' + i.toString(),
           name: 'name' + i.toString(),
           width: 150,
+          maxWidth:200,
+          minWidth:120,
+          hoverShowBubble:true,
           isFrozen: freezeColumns[i],
-          resizable: resizeColumns[i]
+          resizable: resizeColumns[i],
+          
         };
 
         if (sortColumns[i]) {
@@ -182,8 +192,9 @@
         }
         columns.push(col);
       }
-      var data = generateData(columnNumbers, Math.floor(Math.random() * 30) + 10);
+      var data = generateData(columnNumbers, Math.floor(Math.random() * 30) + 30);
       var option = {
+        tableId:'demoTable',
         data: data,
         columns: columns,
         freezeHead: freezeHead,
@@ -193,8 +204,11 @@
         getUniqueId: function (rowData) {
           return rowData.id;
         },
-        width: 1500
-
+        width: 1500,
+        handleTdClick:function(rowId,cellIndex ,td){
+            console.log(rowId);
+            
+          }
       };
       if (justChangeOption) {
         itable.setOption(option);

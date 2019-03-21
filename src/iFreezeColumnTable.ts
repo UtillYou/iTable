@@ -148,7 +148,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
 
     this.state.height = height;
     this.state.width = width;
-    
+
     this.state.$dom = {
       $origin: $this,
       $root: $row,
@@ -233,15 +233,36 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
   }
 
   /**
+   * 
+   * @param row 需要更新的行，采取差异更新的方案，row中包含的字段才更新，根据id查找需要更新的行
+   */
+  updateOptionData(row: Row): void {
+    const rowId = this.getRowId(row, this.options);
+    const [optionRow] = this.findRow(this.options.data, this.options, rowId);
+    const [stateRow, i] = this.findRow(this.state.data, this.options, rowId);
+    const currentRowKeys = Object.keys(optionRow);
+
+    for (let i = 0; i < currentRowKeys.length; i++) {
+      const key = currentRowKeys[i];
+      if (row[key] !== undefined) {
+        optionRow[key] = row[key];
+        stateRow[key] = row[key];
+      }
+    }
+    this.leftTable.updateOptionData(row);
+    this.rightTable.updateOptionData(row);
+  }
+
+  /**
    * 更新state中的data
    * @param data 用于更新 state data 的 data
    */
-  updateOptionData(data: Array<Row>): void {
+  replaceOptionData(data: Array<Row>): void {
     this.options.data = data;
     const [leftColumns, rightColumns] = this.splitColumns(this.options);
     const [leftData, rightData] = this.splitData(this.options.data, leftColumns, rightColumns);
-    this.leftTable.updateOptionData(leftData);
-    this.rightTable.updateOptionData(rightData);
+    this.leftTable.replaceOptionData(leftData);
+    this.rightTable.replaceOptionData(rightData);
   }
 
   /**
@@ -267,10 +288,36 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
   }
 
   /**
+   * 删除一行，不触发重新渲染，直接从table中移除
+   * 并同时删除options和state中的数据
+   * @param id 要删除的行id
+   */
+  deleteOptionData(id: string): void {
+    if (this.state.lastClickRowId === id) {
+      this.state.lastClickRowId = undefined;
+    }
+    if (this.state.lastLockedRowId === id) {
+      this.state.lastLockedRowId = undefined;
+    }
+    const [, optionIndex] = this.findRow(this.options.data, this.options, id);
+    this.options.data.splice(optionIndex, 1);
+    const [, stateIndex] = this.findRow(this.state.data, this.options, id);
+    this.state.data.splice(stateIndex, 1);
+    this.leftTable.deleteOptionData(id);
+    this.rightTable.deleteOptionData(id);
+  }
+
+  /**
    * 设置活跃行，就是选中行
    * @param id 行唯一标识 id
    */
   setActiveRow(id: string): void {
+    if (this.state.lastClickRowId === id) {
+      this.state.lastClickRowId = undefined;
+    } else {
+      this.state.lastClickRowId = id;
+    }
+
     this.leftTable.setActiveRow(id);
     this.rightTable.setActiveRow(id);
   }
@@ -280,6 +327,11 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * @param id 行唯一标识 id
    */
   setLockedRow(id: string): void {
+    if (this.state.lastLockedRowId === id) {
+      this.state.lastLockedRowId = undefined;
+    } else {
+      this.state.lastLockedRowId = id;
+    }
     this.leftTable.setLockedRow(id);
     this.rightTable.setLockedRow(id);
   }
@@ -359,6 +411,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * @param cellIndex 单元格索引，列索引
    */
   handleTdClick(rowId: string, cellIndex: number): void {
+    this.state.lastClickRowId = rowId;
     if (this.activeTableName === 'left') {
       this.rightTable.handleTdClickDomOpe(rowId, cellIndex);
     } else {
@@ -375,6 +428,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * @param cellIndex 单元格索引，列索引
    */
   handleTdDblClick(rowId: string, cellIndex: number): void {
+    this.state.lastLockedRowId = rowId;
     if (this.activeTableName === 'left') {
       this.rightTable.handleTdDblClickDomOpe(rowId, cellIndex);
     } else {
@@ -389,15 +443,16 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 同步鼠标悬浮单元格
    * @param rowIndex 行索引
    * @param cellIndex 单元格索引，列索引
+   * @param td 触发事件的单元格
    */
-  handleTdHover(rowIndex: number, cellIndex: number): void {
+  handleTdHover(rowIndex: number, cellIndex: number, td: JQuery<Node[]>): void {
     if (this.activeTableName === 'left') {
       this.rightTable.handleTdHoverDomOpe(rowIndex, cellIndex);
     } else {
       this.leftTable.handleTdHoverDomOpe(rowIndex, cellIndex);
     }
     if (typeof this.options.handleTdHover === 'function') {
-      this.options.handleTdHover(rowIndex, this.getRealCellIndex(cellIndex));
+      this.options.handleTdHover(rowIndex, this.getRealCellIndex(cellIndex), td);
     }
   }
 
@@ -454,6 +509,16 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
   render() {
     this.leftTable.render();
     this.rightTable.render();
+  }
+
+  /**
+   * 获取当前数据条数
+   */
+  getDataLength(): number {
+    if (!this.state || !this.state.data) {
+      return 0;
+    }
+    return this.state.data.length;
   }
 
   /**

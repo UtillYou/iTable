@@ -114,6 +114,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
       $tbody: $tbody,
     }
 
+    $table.attr('id', options.tableId + options.name);
     if (typeof options.width === 'number') {
       $root.css('width', `${options.width}px`)
     }
@@ -236,6 +237,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.state.$dom.$resizingDom = $col;
 
     const columnName = this.options.columns[index].name;
+    const maxWidth = this.options.columns[index].maxWidth;
+    const minWidth = this.options.columns[index].minWidth;
+
     let charLength = 0;
     for (let i = 0; i < this.state.data.length; i++) {
       const element = this.state.data[i];
@@ -246,12 +250,12 @@ class ITable extends IBaseComponent implements IComponentInterface {
         const c = elementStr[j];
         if (this.isAlphabet(c) || this.isNumber(c)) {
           elementLength += 0.6;
-        }else {
+        } else {
           elementLength += 1;
         }
       }
       elementLength = Math.ceil(elementLength);
-      
+
       if (elementLength > charLength) {
         charLength = elementLength;
       }
@@ -266,7 +270,13 @@ class ITable extends IBaseComponent implements IComponentInterface {
       let padding = parseInt($firstTd.css('padding'));
       padding = padding === null || isNaN(padding) ? 4 : padding;
 
-      const width = (charLength * actualFontSize) + (padding * 2);
+      let width = (charLength * actualFontSize) + (padding * 2);
+      if (maxWidth !== undefined && maxWidth !== null) {
+        width = Math.min(width, maxWidth);
+      }
+      if (minWidth !== undefined && minWidth !== null) {
+        width = Math.max(width, minWidth);
+      }
       const currentWidth = this.state.$dom.$resizingDom.outerWidth();
       const delta = width - currentWidth;
 
@@ -344,9 +354,22 @@ class ITable extends IBaseComponent implements IComponentInterface {
    */
   handleResizeMousemove(event: JQuery.MouseMoveEvent) {
     if (this.state.isResizing === true) {
-      const delta = event.pageX - this.state.resizePrevPageX;
-      let width = this.state.$dom.$resizingDom.outerWidth();
-      width = Math.floor(width + delta);
+      const index = this.state.$dom.$resizingDom.index();
+      const minWidth = this.options.columns[index].minWidth;
+      const maxWidth = this.options.columns[index].maxWidth;
+
+      let delta = event.pageX - this.state.resizePrevPageX;
+      let nowWidth = this.state.$dom.$resizingDom.outerWidth();
+      let width = Math.floor(nowWidth + delta);
+
+      if (minWidth !== undefined && minWidth !== null) {
+        width = Math.max(width, minWidth);
+        delta = width - nowWidth;
+      }
+      if (maxWidth !== undefined && maxWidth !== null) {
+        width = Math.min(width, maxWidth);
+        delta = width - nowWidth;
+      }
 
       let rootWidth = this.state.$dom.$root.outerWidth();
       rootWidth = Math.floor(rootWidth + delta);
@@ -408,7 +431,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     const cellIndex = $td.index();
 
     if (typeof this.options.handleTdHover === 'function') {
-      this.options.handleTdHover(rowIndex, cellIndex);
+      this.options.handleTdHover(rowIndex, cellIndex, $td);
     }
 
     this.handleTdHoverDomOpe(rowIndex, cellIndex);
@@ -468,7 +491,8 @@ class ITable extends IBaseComponent implements IComponentInterface {
     if (this.state.lastClickRowId !== undefined) {
       this.state.$dom.$tbody.find(`tr[data-id="${this.state.lastClickRowId}"]`).removeClass('active');
     }
-    if (this.state.lastClickRowId === rowId || rowId === undefined) {
+    // 上次单击或者双击的都要取消
+    if (this.state.lastClickRowId === rowId || rowId === undefined || this.state.lastLockedRowId === rowId) {
       this.state.lastClickRowId = undefined;
       this.state.lastClickCellIndex = undefined;
     } else {
@@ -478,7 +502,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     }
 
     // 取消双击固定行
-    if (this.state.lastLockedRowId !== undefined && this.state.lastLockedRowId === rowId) {
+    if (this.state.lastLockedRowId !== undefined) {
       this.handleTdDblClickDomOpe(undefined, undefined);
       if (typeof this.options.handleTdDblClick === 'function') {
         this.options.handleTdDblClick(undefined, undefined);
@@ -561,8 +585,12 @@ class ITable extends IBaseComponent implements IComponentInterface {
       for (let j = 0; j < columns.length; j++) {
         const value = row[columns[j].name];
         const $td = this.buildDom(ITable.tdTmpl);
+        $td.attr('data-field', columns[j].name);
+        $td.attr('data-id', rowId);
+
         const $cellDiv = this.buildDom(ITable.cellDivTmpl);
         $cellDiv.html(columns[j].render(value, i, j, row));
+
         $td.append($cellDiv.get(0));
         $tr.append($td.get(0));
       }
@@ -604,12 +632,47 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.render();
   }
 
+  /**
+   * 
+   * @param row 需要更新的行，采取差异更新的方案，row中包含的字段才更新，根据id查找需要更新的行
+   */
+  updateOptionData(row: Row): void {
+    const rowId = this.getRowId(row, this.options);
+    const [optionRow] = this.findRow(this.options.data, this.options, rowId);
+    const [stateRow, rowIndex] = this.findRow(this.state.data, this.options, rowId);
+    const currentRowKeys = Object.keys(optionRow);
+
+    for (let i = 0; i < currentRowKeys.length; i++) {
+      const key = currentRowKeys[i];
+      if (row[key] !== undefined) {
+        optionRow[key] = row[key];
+        stateRow[key] = row[key];
+        const $td = this.state.$dom.$tbody.find(`tr:eq(${rowIndex})`).find(`td[data-field="${key}"]`);
+
+        if ($td.length > 0) {
+          let column;
+          let j = 0;
+          for (; j < this.options.columns.length; j++) {
+            const c = this.options.columns[j];
+            if (c.name === key) {
+              column = c;
+              break;
+            }
+          }
+
+          if (column !== undefined) {
+            $td.children('div').html(column.render(stateRow[key], rowIndex, j, row));
+          }
+        }
+      }
+    }
+  }
 
   /**
    * 更新state中的data
    * @param data 用于更新 state data 的 data
    */
-  updateOptionData(data: Array<Row>): void {
+  replaceOptionData(data: Array<Row>): void {
     this.options.data = data;
     this.updateStateData(data);
   }
@@ -631,6 +694,25 @@ class ITable extends IBaseComponent implements IComponentInterface {
   prependOptionData(row: Row): void {
     this.options.data.splice(0, 0, row);
     this.state.data.splice(0, 0, row);
+    this.render();
+  }
+
+  /**
+   * 删除一行，触发重新渲染
+   * 并同时删除options和state中的数据
+   * @param id 要删除的行id
+   */
+  deleteOptionData(id:string): void {
+    if (this.state.lastClickRowId === id) {
+      this.state.lastClickRowId = undefined;
+    }
+    if (this.state.lastLockedRowId === id) {
+      this.state.lastLockedRowId = undefined;
+    }
+    const [,optionIndex] = this.findRow(this.options.data,this.options,id);
+    this.options.data.splice(optionIndex, 1);
+    const [,stateIndex] = this.findRow(this.state.data,this.options,id);
+    this.state.data.splice(stateIndex, 1);
     this.render();
   }
 
@@ -663,6 +745,16 @@ class ITable extends IBaseComponent implements IComponentInterface {
     finalData = this.sortData(finalData, this.options.columns, sortColumnIndex, sortDirection);
 
     return finalData;
+  }
+
+  /**
+   * 获取当前数据条数
+   */
+  getDataLength(): number {
+    if (!this.state || !this.state.data) {
+      return 0;
+    }
+    return this.state.data.length;
   }
 
   /**

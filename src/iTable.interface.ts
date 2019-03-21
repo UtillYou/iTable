@@ -12,6 +12,7 @@ enum SortDirection {
  * 传入的配置
  */
 interface Options {
+  tableId:string;
   /**
    * 名称，目前用于区分左右表格
    */
@@ -34,7 +35,7 @@ interface Options {
   freezeColumn: boolean;
   /**
    * 表格容器的宽度，表格的宽度始终是100%
-   * 如果有指定本属性，则引用到容器上
+   * 如果有指定本属性，则应用到容器上
    * 否则容器也是100%
    */
   width?: number;
@@ -60,15 +61,15 @@ interface Options {
   /**
    * 处理鼠标悬浮td事件
    */
-  handleTdHover?: (rowIndex: number, cellIndex: number) => void;
+  handleTdHover?: (rowIndex: number, cellIndex: number, td?:JQuery<Node[]>) => void;
   /**
    * 处理鼠标点击td事件
    */
-  handleTdClick?: (rowId: string, cellIndex: number) => void;
+  handleTdClick?: (rowId: string, cellIndex: number ,td?:JQuery<Node[]>) => void;
   /**
    * 处理鼠标双击td事件
    */
-  handleTdDblClick?: (rowId: string, cellIndex: number) => void;
+  handleTdDblClick?: (rowId: string, cellIndex: number, td?:JQuery<Node[]>) => void;
 }
 /**
  * state 中存储的dom引用，jQuery 封装
@@ -217,6 +218,14 @@ interface Column {
    */
   width?: number | string;
   /**
+   * 最大宽度，
+   */
+  maxWidth?:number;
+  /**
+   * 最小宽度
+   */
+  minWidth?:number;
+  /**
    * 渲染函数
    */
   render?: (data: Value, rowIndex?: number, columnIndex?: number, row?: Row) => string;
@@ -267,22 +276,36 @@ interface IComponentInterface {
   initHtml: ($this: JQuery<HTMLElement>) => void;
 
   /**
-   * 更新option data
-   * 同时更新state data
+   * 更新一行option data
+   * 同时更新option data
+   * 根据 id 查找需要更新的数据
+   * 同时更新dom渲染，是更新，不是 重绘，也就是不会调用 render 方法
    */
-  updateOptionData: (data: Array<Row>) => void;
+  updateOptionData:(row:Row)=>void;
 
   /**
-   * 向option data 末尾添加一条数据
+   * 替换option data
+   * 同时替换state data
+   */
+  replaceOptionData: (data: Array<Row>) => void;
+
+  /**
+   * 向option data 末尾添加一条数据,触发重新渲染
    * 同时更新state data
    */
   appendOptionData: (row: Row) => void;
 
   /**
-   * 向option data 头部添加一条数据
+   * 向option data 头部添加一条数据,触发重新渲染
    * 同时更新state data
    */
   prependOptionData: (row: Row) => void;
+
+  /**
+   * 删除一行，触发重新渲染
+   * 并同时删除options和state中的数据
+   */
+  deleteOptionData:(id:string)=>void;
 
   /**
    * 设置活跃行

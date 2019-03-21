@@ -16,11 +16,11 @@
             if (hasFrozenColumn === false && element.isFrozen === true) {
               hasFrozenColumn = true;
             }
-            if (element.isSequence && !element.isFrozen) {
+            if (options.freezeColumn && element.isSequence && !element.isFrozen) {
               throw new Error('当使用固定列的同时包含序号列时，序号列也必须为固定列');
             }
           }
-          if (options.freezeColumn &&hasFrozenColumn === false) {
+          if (options.freezeColumn && hasFrozenColumn === false) {
             throw new Error("当使用固定列时，应该将需要固定的列的 isFrozen 属性设置为 true");
           }
         }

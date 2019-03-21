@@ -1,0 +1,192 @@
+.i-root-container {
+  width: 100%;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.i-root-container .i-table-container,
+.i-root-container .i-table-head-container,
+.i-root-container .i-table-content-container {
+  position: relative;
+  width: 100%;
+}
+.i-root-container .i-table-container .i-table-outer,
+.i-root-container .i-table-head-container .i-table-outer,
+.i-root-container .i-table-content-container .i-table-outer {
+  height: 100%;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner {
+  height: 100%;
+  overflow-y: auto;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table {
+  margin-bottom: 0px;
+  table-layout: auto;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th {
+  position: relative;
+  word-break: keep-all;
+  text-align: center;
+  overflow: hidden;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th.i-table-resizable .i-table-resizable-handle,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th.i-table-resizable .i-table-resizable-handle,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th.i-table-resizable .i-table-resizable-handle {
+  touch-action: none;
+  position: absolute;
+  width: 10px;
+  height: 100%;
+  bottom: 0;
+  right: -5px;
+  cursor: col-resize;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th.i-table-resizable .i-table-resizable-handle.last,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th.i-table-resizable .i-table-resizable-handle.last,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th.i-table-resizable .i-table-resizable-handle.last {
+  border-left: 1px solid #ddd;
+  right: 12px;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle {
+  position: absolute;
+  right: 8px;
+  font-size: 12px;
+  display: block;
+  height: 4px;
+  line-height: 4px;
+  cursor: pointer;
+  -webkit-transition: all .3s;
+  transition: all .3s;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.up,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.up,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.up {
+  top: 7px;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.down,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.down,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.down {
+  top: 17px;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.off,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.off,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.off {
+  color: #bfbfbf;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.off:hover,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.off:hover,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.off:hover {
+  color: #404040;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.on,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.on,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.on {
+  color: #1890ff;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr {
+  -webkit-transition: all .3s,height 0s;
+  transition: all .3s,height 0s;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr.hover td,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr.hover td,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr.hover td {
+  background-color: #e9e9e9;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr.active td,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr.active td,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr.active td {
+  background-color: #DCF5FF!important;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr.locked td,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr.locked td,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr.locked td {
+  background-color: #fff8b0;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr td,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr td,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr td {
+  text-align: center;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr td .cell-div,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr td .cell-div,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr td .cell-div {
+  height: 20px;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  word-break: break-all;
+}
+.i-root-container .i-table-container {
+  height: 100%;
+}
+.i-root-container .i-table-head-container .table-bordered > thead > tr > th {
+  border-bottom-width: 1px;
+}
+.i-root-container .i-table-content-container {
+  height: calc(59%);
+}
+.i-root-container .i-table-content-container .table-bordered {
+  border-top: none;
+}
+.i-row {
+  height: 100%;
+  position: relative;
+}
+.i-row .i-left {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  bottom: 17px;
+  z-index: 999;
+  background-color: white;
+  -webkit-transition: -webkit-box-shadow 0.3s ease;
+  transition: -webkit-box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, -webkit-box-shadow 0.3s ease;
+}
+.i-row .i-left.i-table-scroll-middle {
+  -webkit-box-shadow: 6px 0 6px -4px rgba(0, 0, 0, 0.15);
+  box-shadow: 6px 0 6px -4px rgba(0, 0, 0, 0.15);
+}
+.i-row .i-left .i-table-head-container .i-table-outer .i-table-inner .table-bordered,
+.i-row .i-left .i-table-container .i-table-outer .i-table-inner .table-bordered {
+  border-right: none;
+}
+.i-row .i-left .i-table-head-container .i-table-outer .i-table-inner .table-bordered tr th:last-child,
+.i-row .i-left .i-table-container .i-table-outer .i-table-inner .table-bordered tr th:last-child {
+  border-right: none;
+}
+.i-row .i-left .i-table-content-container .i-table-outer,
+.i-row .i-left .i-table-container .i-table-outer {
+  overflow-x: hidden;
+}
+.i-row .i-left .i-table-content-container .i-table-outer .i-table-inner,
+.i-row .i-left .i-table-container .i-table-outer .i-table-inner {
+  margin-right: -17px;
+}
+.i-row .i-left .i-table-content-container .i-table-outer .i-table-inner .table-bordered,
+.i-row .i-left .i-table-container .i-table-outer .i-table-inner .table-bordered {
+  border-right: none;
+}
+.i-row .i-left .i-table-content-container .i-table-outer .i-table-inner .table-bordered tr td:last-child,
+.i-row .i-left .i-table-container .i-table-outer .i-table-inner .table-bordered tr td:last-child {
+  border-right: none;
+}
+.i-row .i-right {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow-x: auto;
+}
