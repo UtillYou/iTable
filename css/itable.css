@@ -90,6 +90,13 @@
   -webkit-transition: all .3s,height 0s;
   transition: all .3s,height 0s;
 }
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr.new td,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr.new td,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr.new td {
+  animation-name: fadeIn;
+  animation-duration: 1000ms;
+  animation-fill-mode: forwards;
+}
 .i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr.hover td,
 .i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr.hover td,
 .i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr.hover td {
@@ -182,5 +189,15 @@
   position: relative;
   height: 100%;
   width: 100%;
-  overflow-x: auto;
+  overflow-x: scroll;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    background-color: yellow;
+  }
+  to {
+    opacity: 1;
+    background-color: inherit;
+  }
 }

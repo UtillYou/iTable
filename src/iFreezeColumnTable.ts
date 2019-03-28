@@ -62,6 +62,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
     this.destory(false);
     const defaults = {
       name: 'freezeColumnTable',
+      cancelActiveRow:false,
     };
     const options = $.extend(defaults, optionsParam);
     this.options = options;
@@ -167,7 +168,6 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
 
     $left.css('width', `${this.leftOptions.width}px`);
     $right.css('paddingLeft', `${this.leftOptions.width}px`);
-
 
     this.leftTable = this.leftOptions.freezeHead ?
       new IFreezeHeadTable($this.find('.i-left'), this.leftOptions)
@@ -409,33 +409,43 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 同步鼠标点击单元格
    * @param rowId 行id
    * @param cellIndex 单元格索引，列索引
+   * @param $td 触发点击的单元格
    */
-  handleTdClick(rowId: string, cellIndex: number): void {
-    this.state.lastClickRowId = rowId;
-    if (this.activeTableName === 'left') {
-      this.rightTable.handleTdClickDomOpe(rowId, cellIndex);
-    } else {
-      this.leftTable.handleTdClickDomOpe(rowId, cellIndex);
+  handleTdClick(rowId: string, cellIndex: number, $td?: JQuery<Node[]>): void {
+    if (this.options.clickMeansActive) {
+      if (!(this.state.lastClickRowId === rowId && !this.options.cancelActiveRow)) {
+        if (this.activeTableName === 'left') {
+          this.rightTable.handleTdClickDomOpe(rowId, cellIndex);
+        } else {
+          this.leftTable.handleTdClickDomOpe(rowId, cellIndex);
+        }
+      }
+      
     }
     if (typeof this.options.handleTdClick === 'function') {
-      this.options.handleTdClick(rowId, this.getRealCellIndex(cellIndex));
+      this.options.handleTdClick(rowId, this.getRealCellIndex(cellIndex),$td);
     }
+    this.state.lastClickRowId = rowId;
   }
 
   /**
    * 同步鼠标双击单元格
    * @param rowId 行id
    * @param cellIndex 单元格索引，列索引
+   * @param $td 触发双击的单元格
    */
-  handleTdDblClick(rowId: string, cellIndex: number): void {
+  handleTdDblClick(rowId: string, cellIndex: number,$td?: JQuery<Node[]>): void {
     this.state.lastLockedRowId = rowId;
-    if (this.activeTableName === 'left') {
-      this.rightTable.handleTdDblClickDomOpe(rowId, cellIndex);
-    } else {
-      this.leftTable.handleTdDblClickDomOpe(rowId, cellIndex);
+    if (this.options.dblClickMeansLock) {
+      if (this.activeTableName === 'left') {
+        this.rightTable.handleTdDblClickDomOpe(rowId, cellIndex);
+      } else {
+        this.leftTable.handleTdDblClickDomOpe(rowId, cellIndex);
+      }
     }
+    
     if (typeof this.options.handleTdDblClick === 'function') {
-      this.options.handleTdDblClick(rowId, this.getRealCellIndex(cellIndex));
+      this.options.handleTdDblClick(rowId, this.getRealCellIndex(cellIndex),$td);
     }
   }
 
@@ -443,16 +453,16 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 同步鼠标悬浮单元格
    * @param rowIndex 行索引
    * @param cellIndex 单元格索引，列索引
-   * @param td 触发事件的单元格
+   * @param $td 触发事件的单元格
    */
-  handleTdHover(rowIndex: number, cellIndex: number, td: JQuery<Node[]>): void {
+  handleTdHover(rowIndex: number, cellIndex: number, $td: JQuery<Node[]>): void {
     if (this.activeTableName === 'left') {
       this.rightTable.handleTdHoverDomOpe(rowIndex, cellIndex);
     } else {
       this.leftTable.handleTdHoverDomOpe(rowIndex, cellIndex);
     }
     if (typeof this.options.handleTdHover === 'function') {
-      this.options.handleTdHover(rowIndex, this.getRealCellIndex(cellIndex), td);
+      this.options.handleTdHover(rowIndex, this.getRealCellIndex(cellIndex), $td);
     }
   }
 

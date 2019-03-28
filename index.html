@@ -123,7 +123,7 @@
       var egArr = egs.split('');
       for (var i = 0; i < rowLen; i++) {
         var row = {};
-        row.id = i.toString() + i.toString() + i.toString();
+        row.id = i.toString() + i.toString() + i.toString()+Math.random().toString();
         for (var j = 0; j < colLen; j++) {
           var text = '';
           var textLen = Math.floor(Math.random() * 30);
@@ -206,9 +206,13 @@
         },
         width: 1500,
         handleTdClick:function(rowId,cellIndex ,td){
-            console.log(rowId);
+            console.log(rowId,cellIndex ,td);
+            console.log(td.data('field'));
             
-          }
+          },
+          cancelActiveRow:false,
+          clickMeansActive:true,
+          dblClickMeansLock:true,
       };
       if (justChangeOption) {
         itable.setOption(option);

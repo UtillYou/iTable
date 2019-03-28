@@ -150,7 +150,7 @@ class IBaseComponent {
   }
 
   /**
-   * 根据唯一标识，也就是id查找行数据和该行所在索引
+   * 根据唯一标识，也就是id查找行数据和该行所在索引,如果没有则返回null
    * @param rows 需要查找的数据源
    * @param options 选项
    * @param id 唯一标识

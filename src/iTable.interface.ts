@@ -12,7 +12,7 @@ enum SortDirection {
  * 传入的配置
  */
 interface Options {
-  tableId:string;
+  tableId: string;
   /**
    * 名称，目前用于区分左右表格
    */
@@ -45,7 +45,19 @@ interface Options {
    * 如果是函数，则函数的返回值作为唯一标识，每行都会运行这个函数
    * 如果不指定，使用系统默认函数，默认函数为该行的所有Value 的字符串拼接
    */
-  getUniqueId?:string | ((rowData: Row, rowIndex?: number) => Value);
+  getUniqueId?: string | ((rowData: Row, rowIndex?: number) => Value);
+  /**
+   * 是否可以通过再次点击活跃行来取消该行的活跃状态，默认false
+   */
+  cancelActiveRow?: boolean;
+  /**
+   * 单击行变成活跃行，默认false
+   */
+  clickMeansActive?: boolean;
+  /**
+   * 双击行变成锁定行，默认false
+   */
+  dblClickMeansLock?: boolean;
   /**
    * 处理滚动事件
    */
@@ -61,15 +73,15 @@ interface Options {
   /**
    * 处理鼠标悬浮td事件
    */
-  handleTdHover?: (rowIndex: number, cellIndex: number, td?:JQuery<Node[]>) => void;
+  handleTdHover?: (rowIndex: number, cellIndex: number, td?: JQuery<Node[]>) => void;
   /**
    * 处理鼠标点击td事件
    */
-  handleTdClick?: (rowId: string, cellIndex: number ,td?:JQuery<Node[]>) => void;
+  handleTdClick?: (rowId: string, cellIndex: number, td?: JQuery<Node[]>) => void;
   /**
    * 处理鼠标双击td事件
    */
-  handleTdDblClick?: (rowId: string, cellIndex: number, td?:JQuery<Node[]>) => void;
+  handleTdDblClick?: (rowId: string, cellIndex: number, td?: JQuery<Node[]>) => void;
 }
 /**
  * state 中存储的dom引用，jQuery 封装
@@ -136,7 +148,7 @@ interface State {
   /**
    * 当前锁定的行的id数组
    */
-  lastLockedRowId?:string;
+  lastLockedRowId?: string;
   /**
    * 伸缩上一次鼠标的横坐标
    */
@@ -220,11 +232,15 @@ interface Column {
   /**
    * 最大宽度，
    */
-  maxWidth?:number;
+  maxWidth?: number;
   /**
    * 最小宽度
    */
-  minWidth?:number;
+  minWidth?: number;
+  /**
+   * 添加到单元格上的类名
+   */
+  className?:string;
   /**
    * 渲染函数
    */
@@ -237,7 +253,7 @@ type Value = string | number | boolean | null;
 /**
  * 数据接口
  */
-interface Row  {
+interface Row {
   [key: string]: Value
 }
 
@@ -258,17 +274,17 @@ interface IComponentInterface {
   /**
    * 设置选项
    */
-  setOption:(optionsParam: Options, $this?: JQuery)=>void;
+  setOption: (optionsParam: Options, $this?: JQuery) => void;
 
   /**
    * 获取选项
    */
-  getOption:()=>Options;
+  getOption: () => Options;
 
   /**
    * 获取状态;
    */
-  getState:()=>State;
+  getState: () => State;
 
   /**
    * 初始化HTML，将原始的元素内容删除，构建插件HTML
@@ -281,7 +297,7 @@ interface IComponentInterface {
    * 根据 id 查找需要更新的数据
    * 同时更新dom渲染，是更新，不是 重绘，也就是不会调用 render 方法
    */
-  updateOptionData:(row:Row)=>void;
+  updateOptionData: (row: Row) => void;
 
   /**
    * 替换option data
@@ -305,17 +321,17 @@ interface IComponentInterface {
    * 删除一行，触发重新渲染
    * 并同时删除options和state中的数据
    */
-  deleteOptionData:(id:string)=>void;
+  deleteOptionData: (id: string) => void;
 
   /**
    * 设置活跃行
    */
-  setActiveRow:(id:string)=>void;
+  setActiveRow: (id: string) => void;
 
   /**
    * 设置锁定行
    */
-  setLockedRow:(id:string)=>void;
+  setLockedRow: (id: string) => void;
 
   /**
    * 构建state data
@@ -337,5 +353,5 @@ interface IComponentInterface {
   /**
    * 销毁dom内容，引用
    */
-  destory: (withChild:boolean) => void;
+  destory: (withChild: boolean) => void;
 }

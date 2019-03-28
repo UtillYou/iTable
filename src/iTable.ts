@@ -49,6 +49,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.destory();
     const defaults = {
       name: 'table',
+      cancelActiveRow: false,
+      clickMeansActive: false,
+      dblClickMeansLock: false,
     };
     const options = $.extend(defaults, optionsParam);
 
@@ -229,6 +232,11 @@ class ITable extends IBaseComponent implements IComponentInterface {
     return r;
   }
 
+  /**
+   * 双击图标自适应最大宽度，寻找这一列的最大宽度，但不能大于option中设置的最大宽度
+   * 也不能小于option中设置的最小宽度
+   * @param event 双击事件
+   */
   handleResizeDblClick(event: JQuery.DoubleClickEvent) {
     // 查找对应的col
     const $parent = $(event.target).parent();
@@ -244,8 +252,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
     for (let i = 0; i < this.state.data.length; i++) {
       const element = this.state.data[i];
       let elementLength = 0;
-      const elementStr = element[columnName].toString();
+      const elementStr = this.options.columns[index].render(element[columnName], i, index, element);
       const elementCount = elementStr.length;
+      // 计算字符个数，英文和数字算0.6个，其余的算1个
       for (let j = 0; j < elementCount; j++) {
         const c = elementStr[j];
         if (this.isAlphabet(c) || this.isNumber(c)) {
@@ -392,7 +401,6 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param event 鼠标抬起事件
    */
   handleResizeMouseup(event: JQuery.MouseUpEvent) {
-
     if (this.state.isResizing) {
       $(document).off('mousemove', this.state.documentMouseMoveHandler);
       this.state.isResizing = false;
@@ -425,7 +433,10 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param event 鼠标悬浮事件
    */
   handleTdHover(event: JQuery.MouseOverEvent) {
-    const $td = $(event.target);
+    let $td = $(event.target);
+    if ($td[0].tagName !== 'TD') {
+      $td = $td.closest('td');
+    }
     const $tr = $td.closest('tr');
     const rowIndex = $tr.index();
     const cellIndex = $td.index();
@@ -463,7 +474,11 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param event 鼠标点击事件
    */
   handleTdClick(event: JQuery.ClickEvent) {
-    const $td = $(event.target);
+    let $td = $(event.target);
+    if ($td[0].tagName !== 'TD') {
+      $td = $td.closest('td');
+    }
+
     const $tr = $td.closest('tr');
     let rowId = $tr.data('id');
     if (typeof rowId !== 'undefined') {
@@ -472,13 +487,21 @@ class ITable extends IBaseComponent implements IComponentInterface {
     const cellIndex = $td.index();
 
     if (typeof this.options.handleTdClick === 'function') {
-      if (this.state.lastClickRowId === rowId) {
-        this.options.handleTdClick(undefined, undefined);
+      // 如果点击的是同一行，并且用户不允许点击同行取消活跃行，不触发undefined参数
+      if (this.state.lastClickRowId === rowId && this.options.cancelActiveRow) {
+        this.options.handleTdClick(undefined, undefined, $td);
       } else {
-        this.options.handleTdClick(rowId, cellIndex);
+        this.options.handleTdClick(rowId, cellIndex, $td);
       }
     }
 
+    // 如果点击的是同一行，并且用户不允许点击同行取消活跃行，不进行剩余的dom操作
+    if (this.state.lastClickRowId === rowId && !this.options.cancelActiveRow) {
+      return;
+    }
+    if (!this.options.clickMeansActive) {
+      return;
+    }
     this.handleTdClickDomOpe(rowId, cellIndex);
   }
 
@@ -515,7 +538,10 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param event 鼠标双击事件
    */
   handleTdDblClick(event: JQuery.DoubleClickEvent) {
-    const $td = $(event.target);
+    let $td = $(event.target);
+    if ($td[0].tagName !== 'TD') {
+      $td = $td.closest('td');
+    }
     const $tr = $td.closest('tr');
     let rowId = $tr.data('id');
     if (typeof rowId !== 'undefined') {
@@ -525,8 +551,11 @@ class ITable extends IBaseComponent implements IComponentInterface {
 
     if (this.state.lastLockedRowId !== rowId) {
       if (typeof this.options.handleTdDblClick === 'function') {
-        this.options.handleTdDblClick(rowId, cellIndex);
+        this.options.handleTdDblClick(rowId, cellIndex, $td);
       }
+    }
+    if (!this.options.dblClickMeansLock) {
+      return;
     }
     this.handleTdDblClickDomOpe(rowId, cellIndex);
   }
@@ -555,9 +584,13 @@ class ITable extends IBaseComponent implements IComponentInterface {
   /**
    * 设置 inner scrollTop
    * @param scrollTop scroll top值
+   * @param duration 持续时间，默认0
    */
-  updateScrollTop(scrollTop: number) {
-    this.state.$dom.$inner.scrollTop(scrollTop);
+  updateScrollTop(scrollTop: number, duration?: number) {
+    const dur = !duration ? 0 : duration;
+    this.state.$dom.$inner.animate({
+      'scrollTop': scrollTop
+    }, dur);
   }
 
   /**
@@ -570,31 +603,44 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.state.$dom.$tbody.empty();
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
-      const rowId = this.getRowId(row, this.options, i);
-
-      const $tr = this.buildDom(ITable.trTmpl);
-      $tr.attr('data-id', rowId);
-      if (rowId === this.state.lastClickRowId) {
-        $tr.addClass('active');
-      }
-      if (rowId === this.state.lastLockedRowId) {
-        $tr.addClass('locked');
-      }
-
+      const $tr = this.buildRow(row, columns, i);
       this.state.$dom.$tbody.append($tr.get(0));
-      for (let j = 0; j < columns.length; j++) {
-        const value = row[columns[j].name];
-        const $td = this.buildDom(ITable.tdTmpl);
-        $td.attr('data-field', columns[j].name);
-        $td.attr('data-id', rowId);
-
-        const $cellDiv = this.buildDom(ITable.cellDivTmpl);
-        $cellDiv.html(columns[j].render(value, i, j, row));
-
-        $td.append($cellDiv.get(0));
-        $tr.append($td.get(0));
-      }
     }
+  }
+
+  /**
+   * 渲染一行
+   * @param row 行数据
+   * @param rowIndex 行索引
+   */
+  buildRow(row: Row, columns: Array<Column>, rowIndex: number): JQuery<JQuery.Node[]> {
+    const $tr = this.buildDom(ITable.trTmpl);
+    const rowId = this.getRowId(row, this.options, rowIndex);
+    $tr.attr('data-id', rowId);
+
+    if (rowId === this.state.lastClickRowId) {
+      $tr.addClass('active');
+    }
+    if (rowId === this.state.lastLockedRowId) {
+      $tr.addClass('locked');
+    }
+
+    for (let j = 0; j < columns.length; j++) {
+      const value = row[columns[j].name];
+      const $td = this.buildDom(ITable.tdTmpl);
+      $td.attr('data-field', columns[j].name);
+      $td.attr('data-id', rowId);
+      if (!!columns[j].className) {
+        $td.addClass(columns[j].className);
+      }
+
+      const $cellDiv = this.buildDom(ITable.cellDivTmpl);
+      $cellDiv.html(columns[j].render(value, rowIndex, j, row));
+
+      $td.append($cellDiv.get(0));
+      $tr.append($td.get(0));
+    }
+    return $tr;
   }
 
   /**
@@ -679,22 +725,29 @@ class ITable extends IBaseComponent implements IComponentInterface {
 
   /**
    * 向option的末尾添加数据，同时更新state data
+   * 采用单行插入的方式，不重绘，不调用 render
    * @param row 要添加的行数据
    */
   appendOptionData(row: Row): void {
     this.options.data.push(row);
     this.state.data.push(row);
-    this.render();
+    const $tr = this.buildRow(row, this.options.columns, this.getDataLength() - 1);
+    // $tr.addClass('new');
+    this.state.$dom.$table.append($tr.get(0));
+    // const height = this.state.$dom.$table.outerHeight();
+    // this.updateScrollTop(height - 40,500);
   }
 
   /**
    * 向option的头部添加数据，同时更新state data
+   * 采用完整重绘，调用render
    * @param row 要添加的行数据
    */
   prependOptionData(row: Row): void {
     this.options.data.splice(0, 0, row);
     this.state.data.splice(0, 0, row);
     this.render();
+    this.updateScrollTop(0, 500);
   }
 
   /**
@@ -702,16 +755,16 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 并同时删除options和state中的数据
    * @param id 要删除的行id
    */
-  deleteOptionData(id:string): void {
+  deleteOptionData(id: string): void {
     if (this.state.lastClickRowId === id) {
       this.state.lastClickRowId = undefined;
     }
     if (this.state.lastLockedRowId === id) {
       this.state.lastLockedRowId = undefined;
     }
-    const [,optionIndex] = this.findRow(this.options.data,this.options,id);
+    const [, optionIndex] = this.findRow(this.options.data, this.options, id);
     this.options.data.splice(optionIndex, 1);
-    const [,stateIndex] = this.findRow(this.state.data,this.options,id);
+    const [, stateIndex] = this.findRow(this.state.data, this.options, id);
     this.state.data.splice(stateIndex, 1);
     this.render();
   }

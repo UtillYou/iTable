@@ -68,6 +68,13 @@
                         tr{
                             -webkit-transition: all .3s,height 0s;
                             transition: all .3s,height 0s;
+                            &.new{
+                                td{
+                                    animation-name: fadeIn;
+                                    animation-duration: 1000ms;
+                                    animation-fill-mode: forwards;
+                                }
+                            }
                             &.hover{
                                 td{
                                     background-color: #e9e9e9;
@@ -175,6 +182,20 @@
         position: relative;
         height: 100%;
         width:100%;
-        overflow-x: auto;
+        overflow-x: scroll;
     }
 }
+
+@keyframes fadeIn {
+    from {
+      opacity: 0;
+      background-color: yellow;
+    }
+  
+    to {
+      opacity: 1;
+      background-color: inherit;
+    }
+  }
+  
+  
