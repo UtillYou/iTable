@@ -668,7 +668,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param data 用于更新 state data 的 data
    */
   updateStateData(data: Array<Row>): void {
-    this.state.lastLockedRowId = undefined;
+    // this.state.lastLockedRowId = undefined;
     if (!this.options.handleSort) {
       this.state.data = this.buildStateData(data, this.state.currentSortColumnIndex, this.state.currentSortDirection);
     } else {

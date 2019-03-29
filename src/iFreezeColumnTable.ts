@@ -57,7 +57,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * @param optionsParam 选项
    * @param $this 原容器
    */
-  setOption(optionsParam: Options, $this?: JQuery) {
+  setOption(optionsParam: Options, $this?: JQuery):void {
     const $thisRef = $this === undefined ? this.state.$dom.$origin : $this;
     this.destory(false);
     const defaults = {
@@ -479,11 +479,14 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 同步左右侧的表格的scroll top 值
    * @param scrollTop scroll top 值
    */
-  handleScrollTop(scrollTop: number, scrollLeft: number) {
+  handleScrollTop(scrollTop: number) {
     if (this.activeTableName === 'left') {
       this.rightTable.updateScrollTop(scrollTop);
     } else {
       this.leftTable.updateScrollTop(scrollTop);
+    }
+    if (typeof this.options.handleScroll === 'function') {
+      this.options.handleScroll(scrollTop);
     }
   }
 
@@ -497,7 +500,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
   }
 
   /**
-   * 处理右侧表格横线滚动事件
+   * 处理右侧表格横向滚动事件
    * @param event 滚动事件
    */
   handleScrollRight(event: JQuery.ScrollEvent) {
