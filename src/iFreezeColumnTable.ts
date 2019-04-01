@@ -238,7 +238,12 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    */
   updateOptionData(row: Row): void {
     const rowId = this.getRowId(row, this.options);
-    const [optionRow] = this.findRow(this.options.data, this.options, rowId);
+    const optionRowData = this.findRow(this.options.data, this.options, rowId);
+    if (optionRowData===null) {
+      console.log('not find:',row);
+      return;
+    }
+    const optionRow = optionRowData[0];
     const [stateRow, i] = this.findRow(this.state.data, this.options, rowId);
     const currentRowKeys = Object.keys(optionRow);
 

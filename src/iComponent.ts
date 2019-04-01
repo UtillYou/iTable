@@ -19,6 +19,9 @@ class IBaseComponent {
    * @param data 需要渲染的数据
    */
   defaultColumnRender(data: string | number | boolean) {
+    if (data === undefined || data === null) {
+      return '';
+    }
     if (typeof data === 'string') {
       return data;
     }
