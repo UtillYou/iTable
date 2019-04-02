@@ -74,12 +74,9 @@ class IBaseComponent {
    * @param b 后一个项目
    */
   defaultSorter(a: Value, b: Value): number {
-    const aValue = a === null ? 0 : parseFloat(a.toString());
-    const bValue = b === null ? 0 : parseFloat(b.toString());
-    if (isNaN(aValue) || isNaN(bValue)) {
-      return 0;
-    }
-    return aValue - bValue;
+    const aValue = a === null || a === undefined ? '' : a.toString();
+    const bValue = b === null || a === undefined ? '' : b.toString();
+    return aValue.localeCompare(bValue);
   }
 
   /**
@@ -96,9 +93,10 @@ class IBaseComponent {
     if (sortColumnIndex !== undefined) {
       const sorter = columns[sortColumnIndex].sorter;
       const name = columns[sortColumnIndex].name;
+      const renderFunction = columns[sortColumnIndex].render;
       finalData = finalData.sort((a, b) => {
-        const aColumnValue = a[name];
-        const bColumnValue = b[name];
+        const aColumnValue = renderFunction(a[name]);
+        const bColumnValue = renderFunction(b[name]);
         return typeof sorter === 'function' ? sorter(aColumnValue, bColumnValue) : this.defaultSorter(aColumnValue, bColumnValue);
       })
       if (sortDirection === SortDirection.DESCEND) {

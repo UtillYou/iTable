@@ -31,8 +31,32 @@
 .i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th,
 .i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th {
   position: relative;
-  word-break: keep-all;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  word-break: break-all;
   text-align: center;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div::before,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div::before,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div::before {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  background: transparent;
+  -webkit-transition: all .3s;
+  transition: all .3s;
+  content: '';
 }
 .i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th.i-table-resizable .i-table-resizable-handle,
 .i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th.i-table-resizable .i-table-resizable-handle,
@@ -83,6 +107,16 @@
 .i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.on,
 .i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-table-sort-handle.on {
   color: #1890ff;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th.i-table-has-actions,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th.i-table-has-actions,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th.i-table-has-actions {
+  cursor: pointer;
+}
+.i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th.i-table-has-actions:hover,
+.i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th.i-table-has-actions:hover,
+.i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th.i-table-has-actions:hover {
+  background-color: #f2f2f2;
 }
 .i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr,
 .i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr,
@@ -176,6 +210,7 @@
 .i-row .i-left .i-table-content-container .i-table-outer .i-table-inner,
 .i-row .i-left .i-table-container .i-table-outer .i-table-inner {
   margin-right: -17px;
+  overflow-y: scroll;
 }
 .i-row .i-left .i-table-content-container .i-table-outer .i-table-inner .table-bordered,
 .i-row .i-left .i-table-container .i-table-outer .i-table-inner .table-bordered {

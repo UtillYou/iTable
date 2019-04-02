@@ -22,8 +22,30 @@
                     thead{
                         th{
                             position: relative;
-                            word-break: keep-all;
-                            text-align: center;
+                            // word-break: keep-all;
+                            // text-align: center;
+                            .i-th-cell-div{
+                                height:100%;
+                                width:100%;
+                                overflow: hidden;
+                                text-overflow: ellipsis;
+                                display: -webkit-box;
+                                -webkit-line-clamp: 1;
+                                -webkit-box-orient: vertical;
+                                word-break: break-all;
+                                text-align: center;
+                                &::before{
+                                    position: absolute;
+                                    top: 0;
+                                    right: 0;
+                                    bottom: 0;
+                                    left: 0;
+                                    background: transparent;
+                                    -webkit-transition: all .3s;
+                                    transition: all .3s;
+                                    content: '';
+                                }
+                            }
                             &.i-table-resizable{
                                 .i-table-resizable-handle{
                                     touch-action: none;
@@ -35,6 +57,7 @@
                                     cursor: col-resize;
                                     z-index: 999;
                                 }
+                                
                             }
                             .i-table-sort-handle{
                                 position: absolute;
@@ -60,6 +83,12 @@
                                 }
                                 &.on{
                                     color:@sortOnColor;
+                                }
+                            }
+                            &.i-table-has-actions{
+                                cursor: pointer;
+                                &:hover{
+                                    background-color: #f2f2f2;
                                 }
                             }
                         }
@@ -165,6 +194,7 @@
                 overflow-x: hidden;
                 .i-table-inner{
                     margin-right: -17px;
+                    overflow-y: scroll;
                     .table-bordered{
                         border-right:none;
                         tr{

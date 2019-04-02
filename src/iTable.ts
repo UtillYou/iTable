@@ -5,8 +5,10 @@
  */
 class ITable extends IBaseComponent implements IComponentInterface {
   static arrowClass: string = 'i-arrow';
+  static actionClass: string = 'i-table-has-actions';
   static resizeClass: string = 'i-table-resizable';
   static sortHandleClass: string = 'i-table-sort-handle';
+  static thCellDivClass: string = 'i-th-cell-div';
   static sortOnClass: string = 'on';
   static sortOffClass: string = 'off';
   static resizeHandleClass: string = 'i-table-resizable-handle';
@@ -24,6 +26,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
   static tdTmpl: string = '<td></td>';
   static resizeHandleTmpl: string = `<span class="${ITable.resizeHandleClass}"></span>`;
   static cellDivTmpl: string = '<div class="cell-div"></div>';
+  static thCellDivTmpl: string = `<div class="${ITable.thCellDivClass}"></div>`;
   static upTmpl: string = `<i class="${ITable.sortHandleClass} up">
   <svg viewBox="0 0 1024 1024"  width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M858.9 689L530.5 308.2c-9.4-10.9-27.5-10.9-37 0L165.1 689c-12.2 14.2-1.2 35 18.5 35h656.8c19.7 0 30.7-20.8 18.5-35z"></path></svg>
   </i>`;
@@ -150,6 +153,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.state.$dom.$thead.on('mousedown', "." + ITable.resizeHandleClass, this.handleResizeMousedown.bind(this));
     this.state.$dom.$thead.on('dblclick', "." + ITable.resizeHandleClass, this.handleResizeDblClick.bind(this));
     this.state.$dom.$thead.on('click', "." + ITable.sortHandleClass, this.handleSortClick.bind(this));
+    this.state.$dom.$thead.on('click', "." + ITable.thCellDivClass, this.handleThClick.bind(this));
     this.state.$dom.$tbody.on('mouseenter', 'tr', this.handleTdHover.bind(this));
     this.state.$dom.$tbody.on('click', 'td', this.handleTdClick.bind(this));
     this.state.$dom.$tbody.on('dblclick', 'td', this.handleTdDblClick.bind(this));
@@ -184,7 +188,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
    */
   buildTh(column: Column, i: number): JQuery<JQuery.Node[]> {
     const $th = this.buildDom(ITable.thTmpl);
-    $th.html(column.title);
+    const $thCell = this.buildDom(ITable.thCellDivTmpl);
+    $thCell.html(column.title);
+    $th.append($thCell.get(0));
 
     // 添加排序元素
     if (column.sorter) {
@@ -210,6 +216,11 @@ class ITable extends IBaseComponent implements IComponentInterface {
       }
     }
 
+    // 添加操作类
+    if ((column.resizable === true && i < this.options.columns.length - 1)
+    || column.sorter) {
+      $th.addClass(ITable.actionClass);
+    }
     // 添加伸缩元素
     if (column.resizable === true && i < this.options.columns.length - 1) {
       $th.addClass(ITable.resizeClass).append($.parseHTML(ITable.resizeHandleTmpl));
@@ -309,7 +320,14 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param event 鼠标点击事件
    */
   handleSortClick(event: JQuery.ClickEvent) {
-    const $target = $(event.target);
+    this.handleSortClickDomOpe($(event.target));
+  }
+
+  /**
+   * 处理排序事件
+   * @param $target 触发事件的元素，jquery封装
+   */
+  handleSortClickDomOpe($target:JQuery<any>){
     const $i = $target.closest('i');
     const $th = $target.closest('th');
     const index = $th.index();
@@ -337,6 +355,47 @@ class ITable extends IBaseComponent implements IComponentInterface {
     } else {
       this.updateStateData(this.buildStateData(this.options.data));
     }
+  }
+
+  /**
+   * 处理表头单击事件
+   * @param event 鼠标点击事件
+   */
+  handleThClick(event: JQuery.ClickEvent){
+    const $target = $(event.target);
+    const $th = $target.closest('th');
+    if (!$th.hasClass(ITable.actionClass)) {
+      return;
+    }
+    // 顺序：上-下-空
+    let direction; // up or down
+
+    const $upSortHandle = $th.find(`.${ITable.sortHandleClass}.up`);
+    const $downSortHandle = $th.find(`.${ITable.sortHandleClass}.down`);
+    const $onSortHandle = $th.find(`.${ITable.sortHandleClass}.${ITable.sortOnClass}`);
+    if ($onSortHandle.length === 0) {
+      // 当前为空，接下来，如果有上则为上，没有则为下
+      if ($upSortHandle.length === 1) {
+        direction = 'up';
+      }else{
+        direction='down';
+      }
+    }else {
+      if ($upSortHandle.hasClass(ITable.sortOnClass)) {
+        // 当前为上,接下来，如果有下则为下，没有则为空
+        if ($downSortHandle.length === 1) {
+          direction = 'down';
+        }else{
+          direction = 'up';
+        }
+      }else{
+        // 当前为下,接下来，为空
+        direction = 'down';
+      }
+    }
+
+    const $domTarget = $th.find(`.${ITable.sortHandleClass}.${direction}`);
+    this.handleSortClickDomOpe($domTarget);
   }
 
   /**
