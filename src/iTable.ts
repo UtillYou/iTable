@@ -154,7 +154,8 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.state.$dom.$thead.on('dblclick', "." + ITable.resizeHandleClass, this.handleResizeDblClick.bind(this));
     this.state.$dom.$thead.on('click', "." + ITable.sortHandleClass, this.handleSortClick.bind(this));
     this.state.$dom.$thead.on('click', "." + ITable.thCellDivClass, this.handleThClick.bind(this));
-    this.state.$dom.$tbody.on('mouseenter', 'tr', this.handleTdHover.bind(this));
+    this.state.$dom.$tbody.on('mouseenter', 'td', this.handleTdHover.bind(this));
+    this.state.$dom.$tbody.on('mouseleave',  this.handleTbodyLeave.bind(this));
     this.state.$dom.$tbody.on('click', 'td', this.handleTdClick.bind(this));
     this.state.$dom.$tbody.on('dblclick', 'td', this.handleTdDblClick.bind(this));
     this.state.$dom.$root.on('mouseenter', this.handleEnter.bind(this));
@@ -488,10 +489,22 @@ class ITable extends IBaseComponent implements IComponentInterface {
   }
 
   /**
+   * 处理鼠标离开单元格事件
+   * @param event 鼠标离开事件
+   */
+  handleTbodyLeave(event: JQuery.MouseLeaveEvent) {
+    if (typeof this.options.handleTbodyLeave === 'function') {
+      this.options.handleTbodyLeave(this.options.name)
+    }else{
+      this.handleTdHoverDomOpe(undefined,undefined);
+    }
+  }
+
+  /**
    * 处理鼠标悬浮单元格事件
    * @param event 鼠标悬浮事件
    */
-  handleTdHover(event: JQuery.MouseOverEvent) {
+  handleTdHover(event: JQuery.MouseEnterEvent) {
     let $td = $(event.target);
     if ($td[0].tagName !== 'TD') {
       $td = $td.closest('td');
@@ -513,13 +526,13 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param cellIndex 单元格索引，列索引
    */
   handleTdHoverDomOpe(rowIndex: number, cellIndex: number) {
-    if (typeof this.state.lastHoverRowIndex !== 'undefined') {
+    if (this.state.lastHoverRowIndex !== undefined) {
       if (this.state.lastHoverRowIndex === rowIndex) {
         return;
       }
       this.state.$dom.$tbody.find(`tr:eq(${this.state.lastHoverRowIndex})`).removeClass('hover');
     }
-    if (typeof rowIndex !== 'undefined') {
+    if (rowIndex !== undefined) {
       const $tr = this.state.$dom.$tbody.find(`tr:eq(${rowIndex})`);
       $tr.addClass('hover');
     }
@@ -580,7 +593,11 @@ class ITable extends IBaseComponent implements IComponentInterface {
     } else {
       this.state.lastClickRowId = rowId;
       this.state.lastClickCellIndex = cellIndex;
-      this.state.$dom.$tbody.find(`tr[data-id="${rowId}"]`).addClass('active');
+      const row = this.state.$dom.$tbody.find(`tr[data-id="${rowId}"]`).addClass('active').get(0);
+      // 代表是接口调用，不是用户触发
+      if (cellIndex === -1) {
+        ((row as unknown) as HTMLElement).scrollIntoView({ behavior: 'smooth' });
+      }
     }
 
     // 取消双击固定行
@@ -626,7 +643,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
    */
   handleTdDblClickDomOpe(rowId: string, _cellIndex: number) {
     if (this.state.lastLockedRowId === rowId || rowId === undefined) {
+      this.state.$dom.$tbody.find(`tr[data-id="${this.state.lastLockedRowId}"]`).removeClass('locked');
       this.state.lastLockedRowId = undefined;
+      return;
     } else {
       this.state.lastLockedRowId = rowId;
       const rowData = this.findRow(this.state.data, this.options, rowId);
@@ -745,7 +764,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     const rowId = this.getRowId(row, this.options);
     const optionRowData = this.findRow(this.options.data, this.options, rowId);
     if (optionRowData===null) {
-      console.log('not find:',row);
+      console.error('update option data not find:',row);
       return;
     }
     const optionRow = optionRowData[0];
@@ -838,7 +857,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param id 行唯一标识 id
    */
   setActiveRow(id: string): void {
-    this.handleTdClickDomOpe(id, 0);
+    this.handleTdClickDomOpe(id, -1);
   }
 
   /**
@@ -846,7 +865,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param id 行唯一标识 id
    */
   setLockedRow(id: string): void {
-    this.handleTdDblClickDomOpe(id, 0);
+    this.handleTdDblClickDomOpe(id, -1);
   }
 
   /**

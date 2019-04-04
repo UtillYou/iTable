@@ -93,6 +93,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
     leftOption.width = leftWidth;
     leftOption.handleScroll = this.handleScrollTop.bind(this);
     leftOption.handleEnter = this.handleActiveTable.bind(this);
+    leftOption.handleTbodyLeave = this.handleTbodyLeave.bind(this);
     leftOption.handleSort = this.handleSort.bind(this);
     leftOption.handleTdHover = this.handleTdHover.bind(this);
     leftOption.handleTdClick = this.handleTdClick.bind(this);
@@ -104,6 +105,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
     rightOption.width = rightWidth;
     rightOption.handleScroll = this.handleScrollTop.bind(this);
     rightOption.handleEnter = this.handleActiveTable.bind(this);
+    rightOption.handleTbodyLeave = this.handleTbodyLeave.bind(this);
     rightOption.handleSort = this.handleSort.bind(this);
     rightOption.handleTdHover = this.handleTdHover.bind(this);
     rightOption.handleTdClick = this.handleTdClick.bind(this);
@@ -179,7 +181,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
 
     // 绑定事件
     $right.on('scroll', this.handleScrollRight.bind(this));
-    $row.on('mouseleave', this.handleTableLeave.bind(this));
+    // $row.on('mouseleave', this.handleTbodyLeave.bind(this));
   }
 
   /**
@@ -461,11 +463,11 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * @param $td 触发事件的单元格
    */
   handleTdHover(rowIndex: number, cellIndex: number, $td: JQuery<Node[]>): void {
-    if (this.activeTableName === 'left') {
+    // if (this.activeTableName === 'left') {
       this.rightTable.handleTdHoverDomOpe(rowIndex, cellIndex);
-    } else {
+    // } else {
       this.leftTable.handleTdHoverDomOpe(rowIndex, cellIndex);
-    }
+    // }
     if (typeof this.options.handleTdHover === 'function') {
       this.options.handleTdHover(rowIndex, this.getRealCellIndex(cellIndex), $td);
     }
@@ -499,7 +501,7 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 处理鼠标离开表格事件
    * @param event 鼠标离开表格事件
    */
-  handleTableLeave(event: JQuery.MouseLeaveEvent) {
+  handleTbodyLeave(event: JQuery.MouseLeaveEvent) {
     this.leftTable.handleTdHoverDomOpe(undefined, undefined);
     this.rightTable.handleTdHoverDomOpe(undefined, undefined);
   }

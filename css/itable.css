@@ -35,7 +35,7 @@
 .i-root-container .i-table-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div,
 .i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div,
 .i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table thead th .i-th-cell-div {
-  height: 100%;
+  height: 18px;
   width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -150,6 +150,8 @@
 .i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr td,
 .i-root-container .i-table-content-container .i-table-outer .i-table-inner .i-table tbody tr td {
   text-align: center;
+  -webkit-transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 .i-root-container .i-table-container .i-table-outer .i-table-inner .i-table tbody tr td .cell-div,
 .i-root-container .i-table-head-container .i-table-outer .i-table-inner .i-table tbody tr td .cell-div,

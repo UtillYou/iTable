@@ -75,6 +75,10 @@ interface Options {
    */
   handleTdHover?: (rowIndex: number, cellIndex: number, td?: JQuery<Node[]>) => void;
   /**
+   * 处理鼠标离开tbody事件
+   */
+  handleTbodyLeave?: (name: string) => void;
+  /**
    * 处理鼠标点击td事件
    */
   handleTdClick?: (rowId: string, cellIndex: number, td?: JQuery<Node[]>) => void;
