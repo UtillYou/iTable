@@ -52,3 +52,21 @@ src\iTable.interface.ts, code is 79, comment is 222, blank is 17.
 src\iTable.ts, code is 456, comment is 147, blank is 80.
 src\jQueryInit.ts, code is 45, comment is 3, blank is 1.
 ===============================================================================
+===============================================================================
+EXTENSION NAME : linecount
+EXTENSION VERSION : 0.1.7
+-------------------------------------------------------------------------------
+count time : 2019-04-10 17:27:41
+count workspace : d:\nodejs\github\itable
+total files : 6
+total code lines : 1293
+total comment lines : 694
+total blank lines : 218
+
+src\iComponent.ts, code is 121, comment is 75, blank is 16.
+src\iFreezeColumnTable.ts, code is 335, comment is 156, blank is 71.
+src\iFreezeHeadTable.ts, code is 73, comment is 4, blank is 15.
+src\iTable.interface.ts, code is 91, comment is 259, blank is 19.
+src\iTable.ts, code is 628, comment is 197, blank is 96.
+src\jQueryInit.ts, code is 45, comment is 3, blank is 1.
+===============================================================================

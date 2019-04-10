@@ -55,6 +55,8 @@ class ITable extends IBaseComponent implements IComponentInterface {
       cancelActiveRow: false,
       clickMeansActive: false,
       dblClickMeansLock: false,
+      flashWhenUpdate: false,
+      scrollWhenAppend: false,
     };
     const options = $.extend(defaults, optionsParam);
 
@@ -155,7 +157,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.state.$dom.$thead.on('click', "." + ITable.sortHandleClass, this.handleSortClick.bind(this));
     this.state.$dom.$thead.on('click', "." + ITable.thCellDivClass, this.handleThClick.bind(this));
     this.state.$dom.$tbody.on('mouseenter', 'td', this.handleTdHover.bind(this));
-    this.state.$dom.$tbody.on('mouseleave',  this.handleTbodyLeave.bind(this));
+    this.state.$dom.$tbody.on('mouseleave', this.handleTbodyLeave.bind(this));
     this.state.$dom.$tbody.on('click', 'td', this.handleTdClick.bind(this));
     this.state.$dom.$tbody.on('dblclick', 'td', this.handleTdDblClick.bind(this));
     this.state.$dom.$root.on('mouseenter', this.handleEnter.bind(this));
@@ -219,7 +221,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
 
     // 添加操作类
     if ((column.resizable === true && i < this.options.columns.length - 1)
-    || column.sorter) {
+      || column.sorter) {
       $th.addClass(ITable.actionClass);
     }
     // 添加伸缩元素
@@ -328,7 +330,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 处理排序事件
    * @param $target 触发事件的元素，jquery封装
    */
-  handleSortClickDomOpe($target:JQuery<any>){
+  handleSortClickDomOpe($target: JQuery<any>) {
     const $i = $target.closest('i');
     const $th = $target.closest('th');
     const index = $th.index();
@@ -362,7 +364,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 处理表头单击事件
    * @param event 鼠标点击事件
    */
-  handleThClick(event: JQuery.ClickEvent){
+  handleThClick(event: JQuery.ClickEvent) {
     const $target = $(event.target);
     const $th = $target.closest('th');
     if (!$th.hasClass(ITable.actionClass)) {
@@ -378,18 +380,18 @@ class ITable extends IBaseComponent implements IComponentInterface {
       // 当前为空，接下来，如果有上则为上，没有则为下
       if ($upSortHandle.length === 1) {
         direction = 'up';
-      }else{
-        direction='down';
+      } else {
+        direction = 'down';
       }
-    }else {
+    } else {
       if ($upSortHandle.hasClass(ITable.sortOnClass)) {
         // 当前为上,接下来，如果有下则为下，没有则为空
         if ($downSortHandle.length === 1) {
           direction = 'down';
-        }else{
+        } else {
           direction = 'up';
         }
-      }else{
+      } else {
         // 当前为下,接下来，为空
         direction = 'down';
       }
@@ -495,8 +497,8 @@ class ITable extends IBaseComponent implements IComponentInterface {
   handleTbodyLeave(event: JQuery.MouseLeaveEvent) {
     if (typeof this.options.handleTbodyLeave === 'function') {
       this.options.handleTbodyLeave(this.options.name)
-    }else{
-      this.handleTdHoverDomOpe(undefined,undefined);
+    } else {
+      this.handleTdHoverDomOpe(undefined, undefined);
     }
   }
 
@@ -593,10 +595,12 @@ class ITable extends IBaseComponent implements IComponentInterface {
     } else {
       this.state.lastClickRowId = rowId;
       this.state.lastClickCellIndex = cellIndex;
-      const row = this.state.$dom.$tbody.find(`tr[data-id="${rowId}"]`).addClass('active').get(0);
+      const row = this.state.$dom.$tbody.find(`tr[data-id="${rowId}"]`).addClass('active');
       // 代表是接口调用，不是用户触发
       if (cellIndex === -1) {
-        ((row as unknown) as HTMLElement).scrollIntoView({ behavior: 'smooth' });
+        if (row.length > 0) {
+          this.updateScrollTop(row.height() * row.index(), 200);
+        }
       }
     }
 
@@ -763,8 +767,8 @@ class ITable extends IBaseComponent implements IComponentInterface {
   updateOptionData(row: Row): void {
     const rowId = this.getRowId(row, this.options);
     const optionRowData = this.findRow(this.options.data, this.options, rowId);
-    if (optionRowData===null) {
-      console.error('update option data not find:',row);
+    if (optionRowData === null) {
+      console.error('update option data not find:', row);
       return;
     }
     const optionRow = optionRowData[0];
@@ -790,7 +794,17 @@ class ITable extends IBaseComponent implements IComponentInterface {
           }
 
           if (column !== undefined) {
-            $td.children('div').html(column.render(stateRow[key], rowIndex, j, row));
+            const currentHTML = $td.children('div').html();
+            const toChangeHTML = column.render(stateRow[key], rowIndex, j, row);
+            if (currentHTML !== toChangeHTML) {
+              if (this.options.flashWhenUpdate) {
+                $td.addClass('change');
+                setTimeout(() => {
+                  $td.removeClass('change');
+                }, 1100);
+              }
+              $td.children('div').html(toChangeHTML)
+            }
           }
         }
       }
@@ -817,8 +831,10 @@ class ITable extends IBaseComponent implements IComponentInterface {
     const $tr = this.buildRow(row, this.options.columns, this.getDataLength() - 1);
     // $tr.addClass('new');
     this.state.$dom.$table.append($tr.get(0));
-    // const height = this.state.$dom.$table.outerHeight();
-    // this.updateScrollTop(height - 40,500);
+    if (this.options.scrollWhenAppend) {
+      const height = this.state.$dom.$table.outerHeight();
+      this.updateScrollTop(height - 40, 500);
+    }
   }
 
   /**

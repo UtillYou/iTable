@@ -7,8 +7,9 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
   <link rel="stylesheet" href="./vendor/bootstrap.css" />
-  <link rel="stylesheet/less" type="text/css" href="./css/itable.less" />
-  <script src="./vendor/less.min.js"></script>
+  <link rel="stylesheet" href="./css/itable.css" />
+  <!-- <link rel="stylesheet/less" type="text/css" href="./css/itable.less" />
+  <script src="./vendor/less.min.js"></script> -->
   <style>
     label {
       margin-right: 10px;
@@ -51,12 +52,16 @@
         <button onclick="generateTable(true)">动态改变设置</button>
         <button onclick="prependRow()">头部加一行</button>
         <button onclick="appendRow()">尾部加一行</button>
+        <button onclick="randomChange(this)">随机修改数据</button>
       </div>
       <br>
       <div>
-        第 <input type="number" name="" id="choseRow" style="width:40px" value="0"> 行 <button onclick="choseRow()">选中</button><br/><br>
-        第 <input type="number" name="" id="lockRow" style="width:40px"  value="0"> 行 <button onclick="lockRow()">锁定（置顶）</button><br><br>
-        第 <input type="number" name="" id="deleteRow" style="width:40px"  value="0"> 行 <button onclick="deleteRow()">删除</button>
+        第 <input type="number" name="" id="choseRow" style="width:40px" value="0"> 行 <button
+          onclick="choseRow()">选中</button><br /><br>
+        第 <input type="number" name="" id="lockRow" style="width:40px" value="0"> 行 <button
+          onclick="lockRow()">锁定（置顶）</button><br><br>
+        第 <input type="number" name="" id="deleteRow" style="width:40px" value="0"> 行 <button
+          onclick="deleteRow()">删除</button>
       </div>
     </div>
     <div style="clear:both"></div>
@@ -69,6 +74,32 @@
   <script type="text/javascript">
     var itable;
     var columnNumbers;
+    var isRandomChange = false;
+    var randomTimeId;
+
+    function randomChange(ele) {
+      if (isRandomChange === false) {
+        isRandomChange = true;
+        $(ele).html('停止随机修改');
+        randomTimeId = setInterval(function () {
+          var data = itable.getState().data;
+          var index = parseInt(Math.random() * data.length);
+          var row = {
+            id: data[index].id
+          };
+          row['name' + parseInt(Math.random() * columnNumbers).toString()] = '修改数据' + Math.random().toString().substr(0, 8);
+          var ll = parseInt(Math.random()*8);
+          for (let i = 0; i < ll; i++) {
+            row['name' + parseInt(Math.random() * columnNumbers).toString()] = '修改数据' + Math.random().toString().substr(0, 8);
+          }
+          itable.updateOptionData(row);
+        }, 1000);
+      } else {
+        $(ele).html('随机修改数据');
+        isRandomChange = false;
+        clearInterval(randomTimeId);
+      }
+    }
 
     function deleteRow() {
       var deleteRowNumber = parseInt($('#deleteRow').val());
@@ -123,7 +154,7 @@
       var egArr = egs.split('');
       for (var i = 0; i < rowLen; i++) {
         var row = {};
-        row.id = i.toString() + i.toString() + i.toString()+Math.random().toString();
+        row.id = i.toString() + i.toString() + i.toString() + Math.random().toString();
         for (var j = 0; j < colLen; j++) {
           var text = '';
           var textLen = Math.floor(Math.random() * 30);
@@ -166,12 +197,12 @@
           title: '标题标题标题标题标题标题' + i.toString(),
           name: 'name' + i.toString(),
           width: 150,
-          maxWidth:200,
-          minWidth:120,
-          hoverShowBubble:true,
+          maxWidth: 200,
+          minWidth: 120,
+          hoverShowBubble: true,
           isFrozen: freezeColumns[i],
           resizable: resizeColumns[i],
-          
+
         };
 
         if (sortColumns[i]) {
@@ -192,9 +223,10 @@
         }
         columns.push(col);
       }
-      var data = generateData(columnNumbers, Math.floor(Math.random() * 30) + 30);
+      // var data = generateData(columnNumbers, Math.floor(Math.random() * 30) + 30);
+      var data = generateData(columnNumbers, 10);
       var option = {
-        tableId:'demoTable',
+        tableId: 'demoTable',
         data: data,
         columns: columns,
         freezeHead: freezeHead,
@@ -205,17 +237,19 @@
           return rowData.id;
         },
         width: 1500,
-        handleTdClick:function(rowId,cellIndex ,td){
-            console.log(rowId,cellIndex ,td);
-            console.log(td.data('field'));
-            
-          },
-          cancelActiveRow:true,
-          clickMeansActive:true,
-          dblClickMeansLock:true,
+        handleTdClick: function (rowId, cellIndex, td) {
+          console.log(rowId, cellIndex, td);
+          console.log(td.data('field'));
+
+        },
+        cancelActiveRow: true,
+        clickMeansActive: true,
+        dblClickMeansLock: true,
+        flashWhenUpdate:true,
+        scrollWhenAppend:true
       };
       console.log(option);
-      
+
       if (justChangeOption) {
         itable.setOption(option);
         itable.render();

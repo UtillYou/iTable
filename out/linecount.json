@@ -140,6 +140,52 @@
                     "filename": "src\\jQueryInit.ts"
                 }
             ]
+        },
+        {
+            "version": "0.1.7",
+            "counttime": "2019-04-10 17:27:41",
+            "filesum": 6,
+            "codesum": 1293,
+            "commentsum": 694,
+            "blanksum": 218,
+            "filelist": [
+                {
+                    "blank": 16,
+                    "code": 121,
+                    "comment": 75,
+                    "filename": "src\\iComponent.ts"
+                },
+                {
+                    "blank": 71,
+                    "code": 335,
+                    "comment": 156,
+                    "filename": "src\\iFreezeColumnTable.ts"
+                },
+                {
+                    "blank": 15,
+                    "code": 73,
+                    "comment": 4,
+                    "filename": "src\\iFreezeHeadTable.ts"
+                },
+                {
+                    "blank": 19,
+                    "code": 91,
+                    "comment": 259,
+                    "filename": "src\\iTable.interface.ts"
+                },
+                {
+                    "blank": 96,
+                    "code": 628,
+                    "comment": 197,
+                    "filename": "src\\iTable.ts"
+                },
+                {
+                    "blank": 1,
+                    "code": 45,
+                    "comment": 3,
+                    "filename": "src\\jQueryInit.ts"
+                }
+            ]
         }
     ]
 }

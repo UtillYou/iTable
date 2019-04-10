@@ -59,6 +59,14 @@ interface Options {
    */
   dblClickMeansLock?: boolean;
   /**
+   * 数据更新时，单元格是否闪光，这可以提示用户到底哪儿变了
+   */
+  flashWhenUpdate?:boolean;
+  /**
+   * append 数据时，表格是否自动滚动到底部
+   */
+  scrollWhenAppend?:boolean;
+  /**
    * 处理滚动事件
    */
   handleScroll?: (scrollValue: number) => void;

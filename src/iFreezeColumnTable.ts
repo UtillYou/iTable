@@ -62,7 +62,6 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
     this.destory(false);
     const defaults = {
       name: 'freezeColumnTable',
-      cancelActiveRow:false,
     };
     const options = $.extend(defaults, optionsParam);
     this.options = options;
