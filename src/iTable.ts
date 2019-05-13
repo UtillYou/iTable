@@ -161,7 +161,6 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.state.$dom.$tbody.on('click', 'td', this.handleTdClick.bind(this));
     this.state.$dom.$tbody.on('dblclick', 'td', this.handleTdDblClick.bind(this));
     this.state.$dom.$root.on('mouseenter', this.handleEnter.bind(this));
-    $(document).on('mouseup', this.handleResizeMouseup.bind(this));
     this.state.$dom.$inner.on('scroll', this.handleScroll.bind(this));
   }
 
@@ -416,7 +415,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.state.$dom.$resizingDom = $col;
 
     this.state.documentMouseMoveHandler = this.handleResizeMousemove.bind(this);
+    this.state.documentMouseUpHandler = this.handleResizeMouseup.bind(this);
     $(document).on('mousemove', this.state.documentMouseMoveHandler);
+    $(document).on('mouseup', this.state.documentMouseUpHandler);
   }
 
   /**
@@ -465,6 +466,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
   handleResizeMouseup(event: JQuery.MouseUpEvent) {
     if (this.state.isResizing) {
       $(document).off('mousemove', this.state.documentMouseMoveHandler);
+      $(document).off('mouseup', this.state.documentMouseUpHandler);
       this.state.isResizing = false;
       this.state.$dom.$resizingDom = undefined;
     }
@@ -754,9 +756,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
     if (!this.options.handleSort) {
       this.state.data = this.buildStateData(data, this.state.currentSortColumnIndex, this.state.currentSortDirection);
     } else {
-      this.state.data = data;
+      this.state.data = this.buildStateData(data);
     }
-
+    
     this.render();
   }
 
@@ -825,12 +827,15 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 采用单行插入的方式，不重绘，不调用 render
    * @param row 要添加的行数据
    */
-  appendOptionData(row: Row): void {
-    this.options.data.push(row);
-    this.state.data.push(row);
-    const $tr = this.buildRow(row, this.options.columns, this.getDataLength() - 1);
+  appendOptionData(row: Array<Row>): void {
+    this.options.data.push(...row);
+    this.state.data.push(...row);
+    for (let i = 0; i < row.length; i++) {
+      const item = row[i];
+      const $tr = this.buildRow(item, this.options.columns, this.getDataLength() - 1);
     // $tr.addClass('new');
     this.state.$dom.$table.append($tr.get(0));
+    }
     if (this.options.scrollWhenAppend) {
       const height = this.state.$dom.$table.outerHeight();
       this.updateScrollTop(height - 40, 500);
@@ -842,29 +847,32 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 采用完整重绘，调用render
    * @param row 要添加的行数据
    */
-  prependOptionData(row: Row): void {
-    this.options.data.splice(0, 0, row);
-    this.state.data.splice(0, 0, row);
+  prependOptionData(row: Array<Row>): void {
+    this.options.data.splice(0, 0, ...row);
+    this.state.data.splice(0, 0, ...row);
     this.render();
     this.updateScrollTop(0, 500);
   }
 
-  /**
-   * 删除一行，触发重新渲染
+   /**
+   * 批量删除，触发重新渲染
    * 并同时删除options和state中的数据
-   * @param id 要删除的行id
+   * @param ids 要删除的行id数组
    */
-  deleteOptionData(id: string): void {
-    if (this.state.lastClickRowId === id) {
+  deleteOptionData(ids: [string]): void {
+    if (ids.indexOf(this.state.lastClickRowId) >=0) {
       this.state.lastClickRowId = undefined;
     }
-    if (this.state.lastLockedRowId === id) {
+    if (ids.indexOf(this.state.lastLockedRowId)>=0) {
       this.state.lastLockedRowId = undefined;
     }
-    const [, optionIndex] = this.findRow(this.options.data, this.options, id);
-    this.options.data.splice(optionIndex, 1);
-    const [, stateIndex] = this.findRow(this.state.data, this.options, id);
-    this.state.data.splice(stateIndex, 1);
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      const [, optionIndex] = this.findRow(this.options.data, this.options, id);
+      this.options.data.splice(optionIndex, 1);
+      const [, stateIndex] = this.findRow(this.state.data, this.options, id);
+      this.state.data.splice(stateIndex, 1);
+    }
     this.render();
   }
 

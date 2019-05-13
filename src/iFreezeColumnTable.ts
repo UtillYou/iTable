@@ -275,9 +275,9 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 向option的末尾添加数据，同时更新state data
    * @param row 要添加的行数据
    */
-  appendOptionData(row: Row): void {
-    this.options.data.push(row);
-    this.state.data.push(row);
+  appendOptionData(row: Array<Row>): void {
+    this.options.data.push(...row);
+    this.state.data.push(...row);
     this.leftTable.appendOptionData(row);
     this.rightTable.appendOptionData(row);
   }
@@ -286,31 +286,35 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    * 向option的头部添加数据，同时更新state data
    * @param row 要添加的行数据
    */
-  prependOptionData(row: Row): void {
-    this.options.data.splice(0, 0, row);
-    this.state.data.splice(0, 0, row);
+  prependOptionData(row: Array<Row>): void {
+    this.options.data.splice(0, 0, ...row);
+    this.state.data.splice(0, 0, ...row);
     this.leftTable.prependOptionData(row);
     this.rightTable.prependOptionData(row);
   }
 
+
   /**
-   * 删除一行，不触发重新渲染，直接从table中移除
+   * 批量删除，触发重新渲染
    * 并同时删除options和state中的数据
-   * @param id 要删除的行id
+   * @param ids 要删除的行id数组
    */
-  deleteOptionData(id: string): void {
-    if (this.state.lastClickRowId === id) {
+  deleteOptionData(ids: [string]): void {
+    if (ids.indexOf(this.state.lastClickRowId) >=0) {
       this.state.lastClickRowId = undefined;
     }
-    if (this.state.lastLockedRowId === id) {
+    if (ids.indexOf(this.state.lastLockedRowId)>=0) {
       this.state.lastLockedRowId = undefined;
     }
-    const [, optionIndex] = this.findRow(this.options.data, this.options, id);
-    this.options.data.splice(optionIndex, 1);
-    const [, stateIndex] = this.findRow(this.state.data, this.options, id);
-    this.state.data.splice(stateIndex, 1);
-    this.leftTable.deleteOptionData(id);
-    this.rightTable.deleteOptionData(id);
+    for (let i = 0; i < ids.length; i++) {
+      const id = ids[i];
+      const [, optionIndex] = this.findRow(this.options.data, this.options, id);
+      this.options.data.splice(optionIndex, 1);
+      const [, stateIndex] = this.findRow(this.state.data, this.options, id);
+      this.state.data.splice(stateIndex, 1);
+    }
+    this.leftTable.deleteOptionData(ids);
+    this.rightTable.deleteOptionData(ids);
   }
 
   /**

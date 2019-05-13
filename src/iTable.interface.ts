@@ -197,6 +197,10 @@ interface State {
    * 鼠标移动事件句柄
    */
   documentMouseMoveHandler?: (event: JQuery.MouseMoveEvent) => void;
+  /**
+   * 鼠标抬起事件句柄
+   */
+  documentMouseUpHandler?: (event: JQuery.MouseUpEvent) => void;
 }
 
 
@@ -321,19 +325,19 @@ interface IComponentInterface {
    * 向option data 末尾添加一条数据,触发重新渲染
    * 同时更新state data
    */
-  appendOptionData: (row: Row) => void;
+  appendOptionData: (row: Array<Row>) => void;
 
   /**
    * 向option data 头部添加一条数据,触发重新渲染
    * 同时更新state data
    */
-  prependOptionData: (row: Row) => void;
+  prependOptionData: (row: Array<Row>) => void;
 
   /**
    * 删除一行，触发重新渲染
    * 并同时删除options和state中的数据
    */
-  deleteOptionData: (id: string) => void;
+  deleteOptionData: (id: [string]) => void;
 
   /**
    * 设置活跃行
