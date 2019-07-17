@@ -526,6 +526,16 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
     }
   }
 
+   /**
+   * 设置 inner scrollTop
+   * @param scrollTop scroll top值
+   * @param duration 持续时间，默认0
+   */
+  updateScrollTop(scrollTop: number, duration?: number) {
+    this.rightTable.updateScrollTop(scrollTop);
+    this.leftTable.updateScrollTop(scrollTop);
+  }
+
   /**
    * 渲染表格数据
    */
