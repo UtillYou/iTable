@@ -770,7 +770,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     const rowId = this.getRowId(row, this.options);
     const optionRowData = this.findRow(this.options.data, this.options, rowId);
     if (optionRowData === null) {
-      console.error('update option data not find:', row);
+      console.error('update option data not found:', row);
       return;
     }
     const optionRow = optionRowData[0];
@@ -828,10 +828,10 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param row 要添加的行数据
    */
   appendOptionData(row: Array<Row>): void {
-    this.options.data.push(...row);
-    this.state.data.push(...row);
     for (let i = 0; i < row.length; i++) {
       const item = row[i];
+      this.options.data.push(item);
+      this.state.data.push(item);
       const $tr = this.buildRow(item, this.options.columns, this.getDataLength() - 1);
     // $tr.addClass('new');
     this.state.$dom.$table.append($tr.get(0));
