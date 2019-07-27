@@ -57,6 +57,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
       dblClickMeansLock: false,
       flashWhenUpdate: false,
       scrollWhenAppend: false,
+      activeScrollDuration:200,
+      activeRowBgColor:'#DCF5FF',
+      striped:true,
     };
     const options = $.extend(defaults, optionsParam);
 
@@ -104,7 +107,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     const $container = this.buildDom(ITable.containerTmpl);
     const $outer = this.buildDom(ITable.outerTmpl);
     const $inner = this.buildDom(ITable.innerTmpl);
-    const $table = this.buildDom(ITable.tableTmpl);
+    const $table = this.buildDom(options.striped ? ITable.tableTmpl : ITable.tableTmpl.replace('table-striped', ''));
     const $colgroup = this.buildDom(ITable.colgroupTmpl);
     const $thead = this.buildDom(ITable.theadTmpl);
     const $tbody = this.buildDom(ITable.tbodyTmpl);
@@ -597,13 +600,22 @@ class ITable extends IBaseComponent implements IComponentInterface {
     } else {
       this.state.lastClickRowId = rowId;
       this.state.lastClickCellIndex = cellIndex;
-      const row = this.state.$dom.$tbody.find(`tr[data-id="${rowId}"]`).addClass('active');
+      const row = this.state.$dom.$tbody.find(`tr[data-id="${rowId}"]`);
       // 代表是接口调用，不是用户触发
       if (cellIndex === -1) {
         if (row.length > 0) {
-          this.updateScrollTop(row.height() * row.index(), 200);
+          var rowHeight = row.height();
+          var visibleHeight = this.state.$dom.$inner.height();
+          var visibleScroll = this.state.$dom.$inner.scrollTop();
+          var needScroll = rowHeight * row.index();
+          // 如果需要滚动的距离出于 visibleScroll 和 visibleHeight 之间，说明当前可见，无需滚动
+          // 同事预留一行的距离
+          if (needScroll< (visibleScroll + rowHeight) || needScroll > (visibleScroll + visibleHeight - rowHeight)) {
+            this.updateScrollTop(needScroll, this.options.activeScrollDuration);
+          }
         }
       }
+      row.addClass('active');
     }
 
     // 取消双击固定行
@@ -672,9 +684,13 @@ class ITable extends IBaseComponent implements IComponentInterface {
    */
   updateScrollTop(scrollTop: number, duration?: number) {
     const dur = !duration ? 0 : duration;
-    this.state.$dom.$inner.animate({
-      'scrollTop': scrollTop
-    }, dur);
+    if (dur > 0) {
+      this.state.$dom.$inner.animate({
+        'scrollTop': scrollTop
+      }, dur);
+    }else{
+      this.state.$dom.$inner.scrollTop(scrollTop);
+    }
   }
 
   /**

@@ -24,7 +24,7 @@ class IFreezeHeadTable extends ITable {
     const $container = this.buildDom(IFreezeHeadTable.contentContainerTmpl);
     const $outer = this.buildDom(ITable.outerTmpl);
     const $inner = this.buildDom(ITable.innerTmpl);
-    const $table = this.buildDom(ITable.tableTmpl);
+    const $table = this.buildDom(options.striped ? ITable.tableTmpl : ITable.tableTmpl.replace('table-striped', ''));
     const $colgroup = this.buildDom(ITable.colgroupTmpl);
     const $thead = this.buildDom(ITable.theadTmpl);
     const $tbody = this.buildDom(ITable.tbodyTmpl);

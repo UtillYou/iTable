@@ -40,6 +40,11 @@ interface Options {
    */
   width?: number;
   /**
+   * 有条纹的背景
+   * 相邻两行背景色不一样
+   */
+  striped?:boolean;
+  /**
    * 返回一行的唯一标识
    * 如果是字符串，则代表该行的唯一列名称，比如指定 "id"，则改行的 "id" 列的数据作为唯一标识
    * 如果是函数，则函数的返回值作为唯一标识，每行都会运行这个函数
@@ -54,6 +59,14 @@ interface Options {
    * 单击行变成活跃行，默认false
    */
   clickMeansActive?: boolean;
+  /**
+   * 活跃行滚动持续时长，毫秒
+   */
+  activeScrollDuration?:number;
+  /**
+   * 活跃行背景颜色
+   */
+  activeRowBgColor?:string;
   /**
    * 双击行变成锁定行，默认false
    */
