@@ -24,6 +24,7 @@ class IFreezeHeadTable extends ITable {
     const $container = this.buildDom(IFreezeHeadTable.contentContainerTmpl);
     const $outer = this.buildDom(ITable.outerTmpl);
     const $inner = this.buildDom(ITable.innerTmpl);
+    const $tableWraper = this.buildDom(ITable.tableWraperTmpl);
     const $table = this.buildDom(options.striped ? ITable.tableTmpl : ITable.tableTmpl.replace('table-striped', ''));
     const $colgroup = this.buildDom(ITable.colgroupTmpl);
     const $thead = this.buildDom(ITable.theadTmpl);
@@ -36,6 +37,7 @@ class IFreezeHeadTable extends ITable {
       $root:$root,
       $container: $container,
       $inner:$inner,
+      $tableWraper:$tableWraper,
       $table: $table,
       $colgroup: $headColgroup,
       $thead: $thead,
@@ -55,7 +57,8 @@ class IFreezeHeadTable extends ITable {
 
     $container.append($outer.get(0));
     $outer.append($inner.get(0));
-    $inner.append($table.get(0));
+    $inner.append($tableWraper.get(0));
+    $tableWraper.append($table.get(0));
     $headTable.append($headColgroup.get(0)).append($thead.get(0));
     $table.append($colgroup.get(0)).append($tbody.get(0));
 

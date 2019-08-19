@@ -174,6 +174,10 @@ class IBaseComponent {
    * @package i 行号
    */
   getRowId(row: Row, options: Options,i?:number): string {
+    // 如果上次已经计算过，直接取缓存的id
+    if (row.____id) {
+      return row.____id as string;
+    }
     let rowId: string;
     if (typeof options.getUniqueId === 'string') {
       rowId = this.valueToString(row[options.getUniqueId]);
@@ -182,6 +186,8 @@ class IBaseComponent {
     } else {
       rowId = this.defaultGetUniqueId(row, i);
     }
+    // 缓存id到row上
+    row.____id = rowId;
     return rowId
   }
 

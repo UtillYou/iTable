@@ -16,7 +16,10 @@ class ITable extends IBaseComponent implements IComponentInterface {
   static containerTmpl: string = '<div class="i-table-container"></div>';
   static outerTmpl: string = '<div class="i-table-outer"></div>';
   static innerTmpl: string = '<div class="i-table-inner"></div>';
+  static tableWraperTmpl: string = '<div class="i-table-wraper"></div>';
   static tableTmpl: string = '<table class="table table-striped table-bordered i-table"></table>';
+  // static paddingBeforeTmpl: string = '<div class="i-padding-before-div"></div>';
+  // static paddingAfterTmpl: string = '<div class="i-padding-after-div"></div>';
   static colgroupTmpl: string = '<colgroup></colgroup>';
   static colTmpl: string = '<col></col>';
   static theadTmpl: string = '<thead></thead>';
@@ -57,9 +60,13 @@ class ITable extends IBaseComponent implements IComponentInterface {
       dblClickMeansLock: false,
       flashWhenUpdate: false,
       scrollWhenAppend: false,
-      activeScrollDuration:200,
-      activeRowBgColor:'#DCF5FF',
-      striped:true,
+      activeScrollDuration: 200,
+      activeRowBgColor: '#DCF5FF',
+      virtualRender: false,
+      visibleRowsCount: 20,
+      trHeight: 41,
+      scrollThreshold: 20,
+      striped: true,
     };
     const options = $.extend(defaults, optionsParam);
 
@@ -72,7 +79,8 @@ class ITable extends IBaseComponent implements IComponentInterface {
       isResizing: false,
       data: this.options.handleSort ? this.buildStateData(options.data) : this.buildStateData(options.data, currentSortColumnIndex, currentSortDirection),
       currentSortColumnIndex,
-      currentSortDirection
+      currentSortDirection,
+      innerScrollTop: 0,
     };
 
 
@@ -107,6 +115,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     const $container = this.buildDom(ITable.containerTmpl);
     const $outer = this.buildDom(ITable.outerTmpl);
     const $inner = this.buildDom(ITable.innerTmpl);
+    const $tableWraper = this.buildDom(ITable.tableWraperTmpl);
     const $table = this.buildDom(options.striped ? ITable.tableTmpl : ITable.tableTmpl.replace('table-striped', ''));
     const $colgroup = this.buildDom(ITable.colgroupTmpl);
     const $thead = this.buildDom(ITable.theadTmpl);
@@ -119,6 +128,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
       $root: $root,
       $container: $container,
       $inner: $inner,
+      $tableWraper: $tableWraper,
       $table: $table,
       $colgroup: $colgroup,
       $thead: $thead,
@@ -135,7 +145,8 @@ class ITable extends IBaseComponent implements IComponentInterface {
     $root.append($container.get(0));
     $container.append($outer.get(0));
     $outer.append($inner.get(0));
-    $inner.append($table.get(0));
+    $inner.append($tableWraper.get(0));
+    $tableWraper.append($table.get(0));
     $table.append($colgroup.get(0)).append($thead.get(0)).append($tbody.get(0));
 
     // 根据列定义构建表头
@@ -480,8 +491,18 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * @param event 表格滚动事件
    */
   handleScroll(event: JQuery.ScrollEvent) {
+    const visibleScroll = this.state.$dom.$inner.scrollTop();
+
+    if (this.options.virtualRender) {
+      const diff = Math.floor(Math.abs(visibleScroll - this.state.innerScrollTop) / this.options.trHeight);
+
+      if (diff > this.options.scrollThreshold) {
+        this.state.innerScrollTop = visibleScroll;
+        this.virtualRender();
+      }
+    }
     if (typeof this.options.handleScroll === 'function') {
-      this.options.handleScroll($(event.target).scrollTop())
+      this.options.handleScroll(visibleScroll)
     }
   }
 
@@ -601,18 +622,18 @@ class ITable extends IBaseComponent implements IComponentInterface {
       this.state.lastClickRowId = rowId;
       this.state.lastClickCellIndex = cellIndex;
       const row = this.state.$dom.$tbody.find(`tr[data-id="${rowId}"]`);
+      const rawRow = this.findRow(this.state.data, this.options, rowId);
       // 代表是接口调用，不是用户触发
-      if (cellIndex === -1) {
-        if (row.length > 0) {
-          var rowHeight = row.height();
-          var visibleHeight = this.state.$dom.$inner.height();
-          var visibleScroll = this.state.$dom.$inner.scrollTop();
-          var needScroll = rowHeight * row.index();
-          // 如果需要滚动的距离出于 visibleScroll 和 visibleHeight 之间，说明当前可见，无需滚动
-          // 同事预留一行的距离
-          if (needScroll< (visibleScroll + rowHeight) || needScroll > (visibleScroll + visibleHeight - rowHeight)) {
-            this.updateScrollTop(needScroll, this.options.activeScrollDuration);
-          }
+      if (cellIndex === -1 && rawRow !== null) {
+        const [_, rowIndex] = rawRow;
+        var rowHeight = this.options.trHeight;
+        var visibleHeight = this.state.$dom.$inner.height();
+        var visibleScroll = this.state.$dom.$inner.scrollTop();
+        var needScroll = rowHeight * rowIndex;
+        // 如果需要滚动的距离出于 visibleScroll 和 visibleHeight 之间，说明当前可见，无需滚动
+        // 同时预留一行的距离
+        if (needScroll < (visibleScroll + rowHeight) || needScroll > (visibleScroll + visibleHeight - rowHeight)) {
+          this.updateScrollTop(needScroll, this.options.activeScrollDuration);
         }
       }
       row.addClass('active');
@@ -673,8 +694,12 @@ class ITable extends IBaseComponent implements IComponentInterface {
         this.state.data.splice(0, 0, row);
       }
     }
-    this.render();
-    this.updateScrollTop(0);
+    if (this.options.virtualRender) {
+      this.updateScrollTop(0);
+    } else {
+      this.render();
+      this.updateScrollTop(0);
+    }
   }
 
   /**
@@ -688,7 +713,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
       this.state.$dom.$inner.animate({
         'scrollTop': scrollTop
       }, dur);
-    }else{
+    } else {
       this.state.$dom.$inner.scrollTop(scrollTop);
     }
   }
@@ -697,15 +722,74 @@ class ITable extends IBaseComponent implements IComponentInterface {
    * 渲染表格数据
    */
   render() {
+
     const columns = this.options.columns;
-    const data = this.state.data;
+    let data = this.state.data;
+
+    var thHeight = this.state.$dom.$table.find('thead').length > 0 ? 39 : 0;// 39 是表头的高度，固定表头时不需要
+    this.state.$dom.$tableWraper.css('height', data.length * this.options.trHeight + thHeight);
+
+    this.updateScrollTop(0);
+    if (this.options.virtualRender) {
+      this.virtualRender();
+      return;
+    }
 
     this.state.$dom.$tbody.empty();
+
     for (let i = 0; i < data.length; i++) {
       const row = data[i];
       const $tr = this.buildRow(row, columns, i);
       this.state.$dom.$tbody.append($tr.get(0));
     }
+  }
+
+  virtualRender() {
+
+    // console.time('virtual render')
+
+    const columns = this.options.columns;
+    let data = this.state.data;
+
+    const visibleScroll = this.state.innerScrollTop;
+    const scrolledRowsCount = Math.floor(visibleScroll / this.options.trHeight);
+
+    let startIndex = scrolledRowsCount - this.options.scrollThreshold - 10;
+    let endIndex = scrolledRowsCount + this.options.visibleRowsCount + this.options.scrollThreshold;
+
+    if (startIndex < 0) {
+      startIndex = 0;
+    } else if (startIndex > data.length - this.options.visibleRowsCount) {
+      startIndex = data.length - this.options.visibleRowsCount
+    }
+    if (endIndex > data.length) {
+      endIndex = data.length;
+    } else if (endIndex < this.options.visibleRowsCount) {
+      endIndex = this.options.visibleRowsCount;
+    }
+
+    this.state.visibleStartIndex = startIndex;
+    this.state.visibleEndIndex = endIndex;
+
+    let html = '';
+    for (let i = startIndex; i < endIndex; i++) {
+      const row = data[i];
+      if (!row) {
+        continue;
+      }
+      html += this.buildRowHTML(row, columns, i);
+    }
+
+    this.state.$dom.$table.css('transform', 'translateY(' + startIndex * this.options.trHeight + 'px)');
+    this.state.$dom.$tbody.html(html);
+    //     this.state.$dom.$tbody.empty();
+    //     let documentFragment = document.createDocumentFragment();
+    //     let tbody = document.createElement('tbody');
+    // tbody.innerHTML = html;
+    // documentFragment.inner
+    // this.state.$dom.$table.get(0).appendChild(documentFragment)
+    // console.timeEnd('virtual render')
+
   }
 
   /**
@@ -744,6 +828,39 @@ class ITable extends IBaseComponent implements IComponentInterface {
   }
 
   /**
+   * 渲染一行
+   * @param row 行数据
+   * @param rowIndex 行索引
+   */
+  buildRowHTML(row: Row, columns: Array<Column>, rowIndex: number): string {
+    let trHTML = '<tr';
+    const rowId = this.getRowId(row, this.options, rowIndex);
+    trHTML += ` data-id="${rowId}"`;
+    if (rowId === this.state.lastClickRowId) {
+      trHTML += ' class="active"';
+    } else if (rowId === this.state.lastLockedRowId) {
+      trHTML += ' class="locked"';
+    }
+    trHTML += '>';
+
+    for (let j = 0; j < columns.length; j++) {
+      const value = row[columns[j].name];
+      let tdHTML = `<td data-id="${rowId}" data-field="${columns[j].name}"`;
+      if (!!columns[j].className) {
+        tdHTML += ` class="${columns[j].className}"`;
+      }
+      tdHTML += '>';
+
+      const cellDivHTML = `<div class="cell-div">${columns[j].render(value, rowIndex, j, row)}</div>`
+
+      tdHTML += cellDivHTML + '</td>';
+      trHTML += tdHTML;
+    }
+    trHTML += '</tr>';
+    return trHTML;
+  }
+
+  /**
    * 更新state排序相关信息
    * @param sortColumnIndex 排序列索引
    * @param sortDirection 排序列方向
@@ -774,7 +891,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     } else {
       this.state.data = this.buildStateData(data);
     }
-    
+
     this.render();
   }
 
@@ -798,7 +915,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
       if (row[key] !== undefined) {
         optionRow[key] = row[key];
         stateRow[key] = row[key];
-        const $td = this.state.$dom.$tbody.find(`tr:eq(${rowIndex})`).find(`td[data-field="${key}"]`);
+        const $td = this.state.$dom.$tbody.find(`tr[data-id="${rowId}"]`).find(`td[data-field="${key}"]`);
 
         if ($td.length > 0) {
           let column;
@@ -849,8 +966,8 @@ class ITable extends IBaseComponent implements IComponentInterface {
       this.options.data.push(item);
       this.state.data.push(item);
       const $tr = this.buildRow(item, this.options.columns, this.getDataLength() - 1);
-    // $tr.addClass('new');
-    this.state.$dom.$table.append($tr.get(0));
+      // $tr.addClass('new');
+      this.state.$dom.$tbody.append($tr.get(0));
     }
     if (this.options.scrollWhenAppend) {
       const height = this.state.$dom.$table.outerHeight();
@@ -870,16 +987,16 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.updateScrollTop(0, 500);
   }
 
-   /**
-   * 批量删除，触发重新渲染
-   * 并同时删除options和state中的数据
-   * @param ids 要删除的行id数组
-   */
+  /**
+  * 批量删除，触发重新渲染
+  * 并同时删除options和state中的数据
+  * @param ids 要删除的行id数组
+  */
   deleteOptionData(ids: [string]): void {
-    if (ids.indexOf(this.state.lastClickRowId) >=0) {
+    if (ids.indexOf(this.state.lastClickRowId) >= 0) {
       this.state.lastClickRowId = undefined;
     }
-    if (ids.indexOf(this.state.lastLockedRowId)>=0) {
+    if (ids.indexOf(this.state.lastLockedRowId) >= 0) {
       this.state.lastLockedRowId = undefined;
     }
     for (let i = 0; i < ids.length; i++) {

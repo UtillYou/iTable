@@ -80,6 +80,22 @@ interface Options {
    */
   scrollWhenAppend?:boolean;
   /**
+   * 是否开启虚拟渲染，适用于数据量较大的场景
+   */
+  virtualRender?:boolean;
+  /**
+   * 如果开启了虚拟渲染，一直可见的行数
+   */
+  visibleRowsCount ?:number;
+  /**
+   * 如果开启了虚拟渲染，滚动多少条数据触发加载下一批次数据
+   */
+  scrollThreshold?:number;
+  /**
+   * 行高
+   */
+  trHeight?:number;
+  /**
    * 处理滚动事件
    */
   handleScroll?: (scrollValue: number) => void;
@@ -129,6 +145,10 @@ interface StateDom {
    * inner引用, 负责处理滚动
    */
   $inner: JQuery<Node[]>;
+   /**
+   * 表格包裹器引用
+   */
+  $tableWraper?: JQuery<Node[]>;
   /**
    * 表格引用
    */
@@ -149,6 +169,14 @@ interface StateDom {
    * 正在伸缩的dom
    */
   $resizingDom?: JQuery<Node[]>;
+  /**
+ *  开启虚拟渲染后，头部填充的div
+ */
+  // $paddingBefore?:JQuery<Node[]>;
+  /**
+   * 开启虚拟渲染后，尾部填充的div
+   */
+  // $paddingAfter?:JQuery<Node[]>;
 }
 /**
  * 内部状态
@@ -202,6 +230,18 @@ interface State {
    * 上一次鼠标点击的单元格索引
    */
   lastClickCellIndex?: number;
+  /**
+   * 可视区域开始行索引，0 开始
+   */
+  visibleStartIndex?:number;
+  /**
+   * 可视区域结束行索引
+   */
+  visibleEndIndex?:number;
+  /**
+   * $inner 的scrollTop值
+   */
+  innerScrollTop?:number;
   /**
    * dom 引用
    */

@@ -7,9 +7,9 @@
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
   <link rel="stylesheet" href="./vendor/bootstrap.css" />
-  <link rel="stylesheet" href="./css/itable.css" />
-  <!-- <link rel="stylesheet/less" type="text/css" href="./css/itable.less" />
-  <script src="./vendor/less.min.js"></script> -->
+  <!-- <link rel="stylesheet" href="./css/itable.css" /> -->
+  <link rel="stylesheet/less" type="text/css" href="./css/itable.less" />
+  <script src="./vendor/less.min.js"></script>
   <style>
     label {
       margin-right: 10px;
@@ -24,14 +24,14 @@
     </div>
     <div style="float:left;border:1px solid gray;width:1000px;height:400px;width:39%;padding:10px;margin-left: 1%">
       <div>
-        <label for="freezeHead">固定表头：</label><input type="checkbox" name="freezeHead" id="freezeHead" value="1" checked>
+        <label for="freezeHead">固定表头：</label><input type="checkbox" name="freezeHead" id="freezeHead" value="1">
       </div>
       <div>
         <label for="isSequence">生成序号列：</label><input type="checkbox" name="isSequence" id="isSequence" value="1"
           checked>
       </div>
       <div>
-        <label for="columnNumbers">列数：</label><input type="number" name="columnNumbers" id="columnNumbers" value="10"
+        <label for="columnNumbers">列数：</label><input type="number" name="columnNumbers" id="columnNumbers" value="20"
           onchange="handleColumnNumbersChange()">
       </div>
       <div>
@@ -53,15 +53,17 @@
         <button onclick="prependRow()">头部加一行</button>
         <button onclick="appendRow()">尾部加一行</button>
         <button onclick="randomChange(this)">随机修改数据</button>
+        <button onclick="setActiveRowInOrder(this)">顺序高亮行</button>
       </div>
       <br>
       <div>
-        第 <input type="number" name="" id="choseRow" style="width:40px" value="0"> 行 <button
+        第 <input type="number" name="" id="choseRow" style="width:100px" value="0"> 行 <button
           onclick="choseRow()">选中</button><br /><br>
-        第 <input type="number" name="" id="lockRow" style="width:40px" value="0"> 行 <button
+        第 <input type="number" name="" id="lockRow" style="width:100px" value="0"> 行 <button
           onclick="lockRow()">锁定（置顶）</button><br><br>
-        第 <input type="number" name="" id="deleteRow" style="width:40px" value="0"> 行 <button
+        第 <input type="number" name="" id="deleteRow" style="width:100px" value="0"> 行 <button
           onclick="deleteRow()">删除</button>
+          <input type="text" id="abc"/>
       </div>
     </div>
     <div style="clear:both"></div>
@@ -88,8 +90,8 @@
             id: data[index].id
           };
           row['name' + parseInt(Math.random() * columnNumbers).toString()] = '修改数据' + Math.random().toString().substr(0, 8);
-          var ll = parseInt(Math.random()*8);
-          for (let i = 0; i < ll; i++) {
+          var ll = parseInt(Math.random() * 8);
+          for (var i = 0; i < ll; i++) {
             row['name' + parseInt(Math.random() * columnNumbers).toString()] = '修改数据' + Math.random().toString().substr(0, 8);
           }
           itable.updateOptionData(row);
@@ -109,6 +111,37 @@
     function choseRow() {
       var choseRowNumber = parseInt($('#choseRow').val());
       itable.setActiveRow(itable.options.data[choseRowNumber].id);
+    }
+
+    var activeIndex;
+    var stopStep = false;
+    function setActiveRowInOrder(ele) {
+      var $ele = $(ele);
+      activeIndex = 0;
+      if ($ele.html()==='顺序高亮行') {
+        stopStep = false;
+        $ele.html('暂停')
+        activeStep();
+      }else{
+        $ele.html('顺序高亮行')
+        stopStep = true;
+      }
+    }
+
+    function activeStep() {
+
+      
+      var element = itable.options.data[activeIndex++];
+      if (element === undefined || stopStep ===true) {
+        return;
+      }
+      requestAnimationFrame(function () {
+        // console.time('step');
+        itable.setActiveRow(element.id);
+        // document.getElementById('abc').value = activeIndex
+        // console.timeEnd('step');
+        activeStep();
+      });
     }
 
     function lockRow() {
@@ -156,7 +189,7 @@
         var row = {};
         row.id = i.toString() + i.toString() + i.toString() + Math.random().toString();
         for (var j = 0; j < colLen; j++) {
-          var text = '';
+          var text = '' + (i + 1) + ' ';
           var textLen = Math.floor(Math.random() * 30);
           for (var k = 0; k < textLen; k++) {
             if (k % 3 === 0) {
@@ -216,7 +249,7 @@
           col = {
             title: '序号',
             name: 'name' + i.toString(),
-            width: 47,
+            width: 100,
             isSequence: true,
             isFrozen: true,
           };
@@ -224,7 +257,9 @@
         columns.push(col);
       }
       // var data = generateData(columnNumbers, Math.floor(Math.random() * 30) + 30);
-      var data = generateData(columnNumbers, 50);
+
+      var data = generateData(columnNumbers, 5000);
+
       var option = {
         tableId: 'demoTable',
         data: data,
@@ -236,7 +271,7 @@
         getUniqueId: function (rowData) {
           return rowData.id;
         },
-        width: 1500,
+        width: 1100,
         handleTdClick: function (rowId, cellIndex, td) {
           console.log(rowId, cellIndex, td);
           console.log(td.data('field'));
@@ -245,8 +280,11 @@
         cancelActiveRow: true,
         clickMeansActive: true,
         dblClickMeansLock: true,
-        flashWhenUpdate:true,
-        scrollWhenAppend:true
+        flashWhenUpdate: true,
+        scrollWhenAppend: true,
+        virtualRender: true,
+        activeScrollDuration: 0,
+        trHeight:37,
       };
       console.log(option);
 
