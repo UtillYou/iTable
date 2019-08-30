@@ -13,6 +13,7 @@
     "typescript": "^3.3.3333"
   },
   "dependencies": {
+    "jquery": "^1.11.3",
     "tslint": "^5.13.1"
   }
 }

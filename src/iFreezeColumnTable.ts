@@ -265,6 +265,8 @@ class IFreezeColumnTable extends IBaseComponent implements IComponentInterface {
    */
   replaceOptionData(data: Array<Row>): void {
     this.options.data = data;
+    const stateData = this.buildStateData(this.options.data, this.state.currentSortColumnIndex, this.state.currentSortDirection);
+    this.state.data = stateData;
     const [leftColumns, rightColumns] = this.splitColumns(this.options);
     const [leftData, rightData] = this.splitData(this.options.data, leftColumns, rightColumns);
     this.leftTable.replaceOptionData(leftData);
