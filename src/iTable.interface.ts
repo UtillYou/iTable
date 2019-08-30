@@ -60,7 +60,7 @@ interface Options {
    */
   clickMeansActive?: boolean;
   /**
-   * 活跃行滚动持续时长，毫秒
+   * 滚动到活跃行动画持续的时长，如果为0，则不执行动画，直接跳，毫秒
    */
   activeScrollDuration?:number;
   /**

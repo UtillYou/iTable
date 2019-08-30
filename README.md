@@ -60,6 +60,17 @@ freezeHead|boolean|no|是否冻结头部,默认false
 freezeColumn|boolean|no|是否冻结列，如果在columns中有列为冻结列，那么需要明确指定为true，默认false
 width|number|no|表格容器的宽度，表格的宽度始终是100%,如果有指定本属性，则应用到容器上,否则容器也是100%
 getUniqueId|string或function|no|返回一行的唯一标识,如果是字符串，则代表该行的唯一列名称，比如指定 "id"，则改行的 "id" 列的数据作为唯一标识,如果是函数，则函数的返回值作为唯一标识，每行都会运行这个函数,如果不指定，使用系统默认函数，默认函数为该行的所有Value 的字符串拼接
+cancelActiveRow|boolean|no|是否可以通过再次点击活跃行来取消该行的活跃状态，默认false
+clickMeansActive|boolean|no|单击行变成活跃行，默认false
+activeScrollDuration|number|no|滚动到活跃行动画持续的时长，如果为0，则不执行动画，直接跳，毫秒
+activeRowBgColor|string|no|活跃行背景颜色
+dblClickMeansLock|boolean|no|双击行变成锁定行，默认false
+flashWhenUpdate|boolean|no|数据更新时，单元格是否闪光，这可以提示用户到底哪儿变了
+scrollWhenAppend|boolean|no|append 数据时，表格是否自动滚动到底部
+virtualRender|boolean|no|是否开启虚拟渲染，适用于数据量较大的场景
+visibleRowsCount|number|no|如果开启了虚拟渲染，一直可见的行数
+scrollThreshold|number|no|如果开启了虚拟渲染，滚动多少条数据触发加载下一批次数据
+trHeight|number|no|行高
 handleScroll|function|no|处理滚动事件,(scrollValue: number) => void
 handleEnter|function|no|处理鼠标悬浮事件，确定当前左右表格哪个是活动表格,(name: string) => void
 handleSort|function|no|处理排序事件,(sortColumnIndex: number, sortDirection: 'ascend'\|'descend') => void
