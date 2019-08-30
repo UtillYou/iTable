@@ -75,6 +75,7 @@ handleScroll|function|no|处理滚动事件,(scrollValue: number) => void
 handleEnter|function|no|处理鼠标悬浮事件，确定当前左右表格哪个是活动表格,(name: string) => void
 handleSort|function|no|处理排序事件,(sortColumnIndex: number, sortDirection: 'ascend'\|'descend') => void
 handleTdHover|function|no|处理鼠标悬浮td事件,(rowIndex: number, cellIndex: number, td?:JQuery<Node[]>) => void
+handleThHover|function|no|处理鼠标悬浮th事件,(cellIndex: number, th?:JQuery<Node[]>) => void, 可通过 th.data('name') 获取列的name
 handleTdClick|function|no|处理鼠标点击td事件,(rowId: string, cellIndex: number ,td?:JQuery<Node[]>) => void
 handleTdDblClick|function|no|(rowId: string, cellIndex: number, td?:JQuery<Node[]>) => void
 

@@ -170,6 +170,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     this.state.$dom.$thead.on('dblclick', "." + ITable.resizeHandleClass, this.handleResizeDblClick.bind(this));
     this.state.$dom.$thead.on('click', "." + ITable.sortHandleClass, this.handleSortClick.bind(this));
     this.state.$dom.$thead.on('click', "." + ITable.thCellDivClass, this.handleThClick.bind(this));
+    this.state.$dom.$thead.on('mouseenter', 'th', this.handleThHover.bind(this));
     this.state.$dom.$tbody.on('mouseenter', 'td', this.handleTdHover.bind(this));
     this.state.$dom.$tbody.on('mouseleave', this.handleTbodyLeave.bind(this));
     this.state.$dom.$tbody.on('click', 'td', this.handleTdClick.bind(this));
@@ -207,6 +208,7 @@ class ITable extends IBaseComponent implements IComponentInterface {
     const $thCell = this.buildDom(ITable.thCellDivTmpl);
     $thCell.html(column.title);
     $th.append($thCell.get(0));
+    $th.attr('data-name', column.name);
 
     // 添加排序元素
     if (column.sorter) {
@@ -525,6 +527,23 @@ class ITable extends IBaseComponent implements IComponentInterface {
       this.options.handleTbodyLeave(this.options.name)
     } else {
       this.handleTdHoverDomOpe(undefined, undefined);
+    }
+  }
+
+  /**
+   * 处理鼠标悬浮表头事件
+   * @param event 鼠标悬浮事件
+   */
+  handleThHover(event: JQuery.MouseEnterEvent) {
+    let $th = $(event.target);
+    if ($th[0].tagName !== 'TH') {
+      $th = $th.closest('th');
+    }
+
+    const cellIndex = $th.index();
+
+    if (typeof this.options.handleThHover === 'function') {
+      this.options.handleThHover(cellIndex, $th);
     }
   }
 

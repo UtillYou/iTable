@@ -31,7 +31,7 @@
           checked>
       </div>
       <div>
-        <label for="columnNumbers">列数：</label><input type="number" name="columnNumbers" id="columnNumbers" value="100"
+        <label for="columnNumbers">列数：</label><input type="number" name="columnNumbers" id="columnNumbers" value="10"
           onchange="handleColumnNumbersChange()">
       </div>
       <div>
@@ -72,7 +72,7 @@
   </div>
   <div style="clear: both;"></div>
   <script src="./vendor/jquery-1.11.3.min.js"></script>
-  <script src="./dist/itable.js"></script>
+  <script src="./dist/itable.min.js"></script>
   <script type="text/javascript">
     var itable;
     var columnNumbers;
@@ -275,6 +275,10 @@
         handleTdClick: function (rowId, cellIndex, td) {
           console.log(rowId, cellIndex, td);
           console.log(td.data('field'));
+
+        },
+        handleThHover: function ( cellIndex, th) {
+          console.log(th.data('name'));
 
         },
         cancelActiveRow: true,
