@@ -347,6 +347,9 @@ class ITable extends IBaseComponent implements IComponentInterface {
    */
   handleSortClickDomOpe($target: JQuery<any>) {
     const $i = $target.closest('i');
+    if ($i.length === 0) {
+      return; // 可能没有指定为排序列，但是也能接受到点击事件
+    }
     const $th = $target.closest('th');
     const index = $th.index();
     const direction = $i.hasClass('up') ? SortDirection.ASCEND : SortDirection.DESCEND;
